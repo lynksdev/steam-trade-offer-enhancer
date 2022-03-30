@@ -225,15 +225,14 @@ const shared = {
             // this is used heavily and should be as optimized as possible
             getItemAttributes: function(item) {
                 const hasDescriptions = typeof item.descriptions === 'object';
-                const isUnique = (item.name_color || '').toUpperCase() === '7D6D00';
+                const attributes = {
+                    color: (item.name_color || '').toUpperCase()
+                };
+                const isUnique = attributes.color === '7D6D00';
                 const { getEffectValue } = shared.offers.unusual;
-                const attributes = {};
-                // get item quality color
-                attributes.color = item.name_color;
-
                 // is a strange quality item
                 // thse are not marked as strange
-                const isStrangeQuality = (item.name_color || '').toUpperCase() === 'CF6A32';
+                const isStrangeQuality = (attributes.color || '').toUpperCase() === 'CF6A32';
                 const hasStrangeItemType = Boolean(
                     // the name must begin with strange
                     /^Strange /.test(item.market_hash_name) &&
@@ -253,10 +252,14 @@ const shared = {
                         'Strange Stat Clock Attached' === description.value.trim()
                     );
                 };
+                const matchesLowcraft = (
+                    item.name &&
+                    item.name.match(/.* #(\d+)$/)
+                );
                  
                 // checks for a craft number that displays in game (<100) with regex and extracts it
-                if (/.* #\d+$/.test(item.name)) {
-                    attributes.lowcraft = item.name.match(/.* (#\d+)$/)[1];
+                if (matchesLowcraft) {
+                    attributes.lowcraft = parseInt(matchesLowcraft[1]);
                 }
                 
                 // whether the item is strange or not (strange unusuals, strange genuine, etc.)
@@ -357,19 +360,15 @@ const shared = {
                 }
                 
                 if (attributes.lowcraft) {
-                    // construct icon for spells
-                    craftNumberEl = document.createElement('div');
+                    // construct icon for lowcraft
+                    const craftNumberEl = document.createElement('div');
 
-                    craftNumberEl.innerHTML = attributes.lowcraft;
-                    craftNumberEl.classList = classes;
-                    craftNumberEl.setAttribute('style', `
-                        color:#${attributes.color};
-                        top: 0px;
-                        left: 2px;
-                        text-align: end;
-                        font-size: 16px;
-                        position: absolute;
-                    `);
+                    craftNumberEl.textContent = `#${attributes.lowcraft}`;
+                    craftNumberEl.classList.add('lowcraft');
+                    craftNumberEl.style.color = `#${attributes.color}`;
+                    
+                    // add it to the icons element
+                    itemEl.appendChild(craftNumberEl);
                 }
                 
                 if (attributes.spelled) {
@@ -389,11 +388,6 @@ const shared = {
                     
                     // then insert the element containing icons
                     itemEl.appendChild(iconsEl);
-                }
-                
-                // insert craft number if populated
-                if (craftNumberEl != null) {
-                    itemEl.appendChild(craftNumberEl);
                 }
                 
                 if (classes.length > 0) {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Steam Trade Offer Enhancer
 // @description Browser script to enhance Steam trade offers.
-// @version     2.1.5
+// @version     2.1.6
 // @author      Julia
 // @namespace   http://steamcommunity.com/profiles/76561198080179568/
 // @updateURL   https://github.com/juliarose/steam-trade-offer-enhancer/raw/master/steam.trade.offer.enhancer.meta.js
@@ -506,11 +506,27 @@
                     height: 20px;
                 }
                 
+                .lowcraft {
+                    user-select: none;
+                    right: 4%;
+                    bottom: 4%;
+                    text-align: end;
+                    width: 50%;
+                    font-size: 16px;
+                    z-index: 1;
+                    line-height: 1;
+                    position: absolute;
+                }
+                
+                .icons > * {
+                    margin-right: 4%;
+                }
+                
                 .icons {
                     position: absolute;
-                    bottom: 3px;
-                    left: 3px;
-                    width: 100%;
+                    bottom: 4%;
+                    left: 4%;
+                    width: 92%;
                     height: 20px;
                 }
             `,
@@ -648,11 +664,27 @@
                     height: 20px;
                 }
                 
+                .lowcraft {
+                    user-select: none;
+                    right: 4%;
+                    bottom: 4%;
+                    text-align: end;
+                    width: 50%;
+                    font-size: 16px;
+                    z-index: 1;
+                    line-height: 1;
+                    position: absolute;
+                }
+                
+                .icons > * {
+                    margin-right: 4%;
+                }
+                
                 .icons {
                     position: absolute;
-                    bottom: 6px;
-                    left: 6px;
-                    width: 100%;
+                    bottom: 4%;
+                    left: 4%;
+                    width: 92%;
                     height: 20px;
                 }
             `,
@@ -788,11 +820,27 @@
                     height: 20px;
                 }
                 
+                .lowcraft {
+                    user-select: none;
+                    right: 4%;
+                    bottom: 4%;
+                    text-align: end;
+                    width: 50%;
+                    font-size: 16px;
+                    z-index: 1;
+                    line-height: 1;
+                    position: absolute;
+                }
+                
+                .icons > * {
+                    margin-right: 4%;
+                }
+                
                 .icons {
                     position: absolute;
-                    bottom: 6px;
-                    left: 6px;
-                    width: 100%;
+                    bottom: 4%;
+                    left: 4%;
+                    width: 92%;
                     height: 20px;
                 }
                 
@@ -917,11 +965,27 @@
                     height: 20px;
                 }
                 
+                .lowcraft {
+                    user-select: none;
+                    right: 4%;
+                    bottom: 4%;
+                    text-align: end;
+                    width: 50%;
+                    font-size: 16px;
+                    z-index: 1;
+                    line-height: 1;
+                    position: absolute;
+                }
+                
+                .icons > * {
+                    margin-right: 4%;
+                }
+                
                 .icons {
                     position: absolute;
-                    bottom: 6px;
-                    left: 6px;
-                    width: 100%;
+                    bottom: 4%;
+                    left: 4%;
+                    width: 92%;
                     height: 20px;
                 }
                 
@@ -1368,11 +1432,27 @@
                     height: 20px;
                 }
                 
+                .lowcraft {
+                    user-select: none;
+                    right: 4%;
+                    bottom: 4%;
+                    text-align: end;
+                    width: 50%;
+                    font-size: 16px;
+                    z-index: 1;
+                    line-height: 1;
+                    position: absolute;
+                }
+                
+                .icons > * {
+                    margin-right: 4%;
+                }
+                
                 .icons {
                     position: absolute;
-                    bottom: 6px;
-                    left: 6px;
-                    width: 100%;
+                    bottom: 4%;
+                    left: 4%;
+                    width: 92%;
                     height: 20px;
                 }
             `,
@@ -3039,7 +3119,7 @@
     (function() {
         const DEPS = (function() {
             // current version number of script
-            const VERSION = '2.1.5';
+            const VERSION = '2.1.6';
             // our window object for accessing globals
             const WINDOW = unsafeWindow;
             // dependencies to provide to each page script    
@@ -3267,12 +3347,14 @@
                         // this is used heavily and should be as optimized as possible
                         getItemAttributes: function(item) {
                             const hasDescriptions = typeof item.descriptions === 'object';
-                            const isUnique = (item.name_color || '').toUpperCase() === '7D6D00';
+                            const attributes = {
+                                color: (item.name_color || '').toUpperCase()
+                            };
+                            const isUnique = attributes.color === '7D6D00';
                             const { getEffectValue } = shared.offers.unusual;
-                            const attributes = {};
                             // is a strange quality item
                             // thse are not marked as strange
-                            const isStrangeQuality = (item.name_color || '').toUpperCase() === 'CF6A32';
+                            const isStrangeQuality = (attributes.color || '').toUpperCase() === 'CF6A32';
                             const hasStrangeItemType = Boolean(
                                 // the name must begin with strange
                                 /^Strange /.test(item.market_hash_name) &&
@@ -3292,6 +3374,15 @@
                                     'Strange Stat Clock Attached' === description.value.trim()
                                 );
                             };
+                            const matchesLowcraft = (
+                                item.name &&
+                                item.name.match(/.* #(\d+)$/)
+                            );
+                             
+                            // checks for a craft number that displays in game (<100) with regex and extracts it
+                            if (matchesLowcraft) {
+                                attributes.lowcraft = parseInt(matchesLowcraft[1]);
+                            }
                             
                             // whether the item is strange or not (strange unusuals, strange genuine, etc.)
                             // NOT strange quality items
@@ -3371,6 +3462,7 @@
                                 getEffectURL
                             } = shared.offers.unusual;
                             const iconsEl = document.createElement('div');
+                            let craftNumberEl = null;
                             const classes = [];
                             
                             if (attributes.effect) {
@@ -3387,6 +3479,18 @@
                             
                             if (attributes.uncraft) {
                                 classes.push('uncraft');
+                            }
+                            
+                            if (attributes.lowcraft) {
+                                // construct icon for lowcraft
+                                const craftNumberEl = document.createElement('div');
+            
+                                craftNumberEl.textContent = `#${attributes.lowcraft}`;
+                                craftNumberEl.classList.add('lowcraft');
+                                craftNumberEl.style.color = `#${attributes.color}`;
+                                
+                                // add it to the icons element
+                                itemEl.appendChild(craftNumberEl);
                             }
                             
                             if (attributes.spelled) {

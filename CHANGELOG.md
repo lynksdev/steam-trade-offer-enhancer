@@ -257,3 +257,8 @@
 ## [2.1.5] - 2022-01-31
 ### Added
 - Winter 2021 effects.
+
+## [2.1.6] - 2022-03-30
+### Added
+- Low craft numbers from [pull request](https://github.com/juliarose/steam-trade-offer-enhancer/pull/2).
+- Margins for spell icons.
