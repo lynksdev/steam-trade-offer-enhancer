@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Steam Trade Offer Enhancer
 // @description Browser script to enhance Steam trade offers.
-// @version     2.1.6
+// @version     2.1.7
 // @author      Julia
 // @namespace   http://steamcommunity.com/profiles/76561198080179568/
 // @updateURL   https://github.com/juliarose/steam-trade-offer-enhancer/raw/master/steam.trade.offer.enhancer.meta.js
@@ -3119,7 +3119,7 @@
     (function() {
         const DEPS = (function() {
             // current version number of script
-            const VERSION = '2.1.6';
+            const VERSION = '2.1.7';
             // our window object for accessing globals
             const WINDOW = unsafeWindow;
             // dependencies to provide to each page script    
@@ -3793,7 +3793,32 @@
                             'Golden Glimmer': 3083,
                             'Frosty Silver': 3084,
                             'Glamorous Dazzle': 3085,
-                            'Sublime Snowstorm': 3087
+                            'Sublime Snowstorm': 3087,
+                            'Haunted Kraken': 257,
+                            'Eerie Kraken': 258,
+                            'Soulful Slice': 259,
+                            'Horsemann\'s Hack': 260,
+                            'Haunted Forever!': 261,
+                            'Forever And Forever!': 263,
+                            'Cursed Forever!': 264,
+                            'Moth Plague': 265,
+                            'Malevolent Monoculi': 266,
+                            'Haunted Wick': 267,
+                            'Wicked Wick': 269,
+                            'Spectral Wick': 270,
+                            'Marigold Ritual': 3088,
+                            'Pungent Poison': 3090,
+                            'Blazed Brew': 3091,
+                            'Mysterious Mixture': 3092,
+                            'Linguistic Deviation': 3093,
+                            'Aurelian Seal': 3094,
+                            'Runic Imprisonment': 3095,
+                            'Prismatic Haze': 3097,
+                            'Rising Ritual': 3098,
+                            'Bloody Grip': 3100,
+                            'Toxic Grip': 3102,
+                            'Infernal Grip': 3103,
+                            'Death Grip': 3104
                         },
                         /**
                          * Includes effect image in element.

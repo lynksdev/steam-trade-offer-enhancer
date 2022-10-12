@@ -262,3 +262,7 @@
 ### Added
 - Low craft numbers from [pull request](https://github.com/juliarose/steam-trade-offer-enhancer/pull/2).
 - Margins for spell icons.
+
+## [2.1.7] - 2022-10-11
+### Added
+- Halloween 2022 effects.
