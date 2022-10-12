@@ -1335,9 +1335,20 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
                 assetid: '0',
                 amount: 1
             });
-            RefreshTradeStatus(TRADE_STATUS, true);
+            
+            try {
+                RefreshTradeStatus(TRADE_STATUS, true);
+            } catch (e) {
+                // ignore the error
+            }
+            
             TRADE_STATUS.them.assets = [];
-            RefreshTradeStatus(TRADE_STATUS, true);
+            
+            try {
+                RefreshTradeStatus(TRADE_STATUS, true);
+            } catch (e) {
+                // ignore the error
+            }
         }
         
         // customizes the elements in the inventory

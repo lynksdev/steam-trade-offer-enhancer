@@ -266,3 +266,7 @@
 ## [2.1.7] - 2022-10-11
 ### Added
 - Halloween 2022 effects.
+
+## [2.1.8] - 2022-10-12
+### Fixed
+- An issue where an item would load endlessly in some cases.
