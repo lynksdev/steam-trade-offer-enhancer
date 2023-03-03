@@ -44,82 +44,78 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
      */
     const tradeOfferWindow = (function() {
         /**
-         * Get summary of items.
-         * @param {Object} $items - JQuery object of collection of items.
-         * @param {Boolean} you - Are these your items?
-         * @returns {(Object|null)} Summary of items, null if inventory is not properly loaded.
-         */
-        function evaluateItems($items, you) {
-            const inventory = you ? INVENTORY : PARTNER_INVENTORY;
-            const total = $items.length;
-            let apps = {};
-            let items = {};
-            let valid = true;
-            
-            $items.toArray().forEach((itemEl) => {
-                // array containing item identifiers e.g. ['440', '2', '123']
-                const split = itemEl.id.replace('item', '').split('_'); 
-                const [appid, contextid, assetid] = split;
-                // get the icon image
-                const img = itemEl.querySelector(':scope > img').getAttribute('src');
-                const quality = itemEl.style.borderColor;
-                const effect = itemEl.getAttribute('data-effect');
-                const uncraft = itemEl.classList.contains('uncraft');
-                const strange = itemEl.classList.contains('strange');
-                const item = (
-                    inventory[appid] &&
-                    inventory[appid].rgContexts[contextid].inventory.rgInventory[assetid]
-                );
-                
-                if (!item) {
-                    // not properly loaded
-                    valid = false;
-                    
-                    // stop loop
-                    return false; 
-                }
-                
-                if (!apps[appid]) {
-                    apps[appid] = [];
-                }
-                
-                // create json for item
-                const json = Utils.omitEmpty({
-                    img,
-                    quality,
-                    effect,
-                    uncraft,
-                    strange
-                });
-                // use the json to create the key
-                const key = JSON.stringify(json);
-                
-                items[key] = (items[key] || 0) + 1;
-                apps[appid].push(assetid);
-            });
-            
-            if (!valid) {
-                return null;
-            }
-            
-            return {
-                total,
-                apps,
-                items
-            };
-        }
-        
-        /**
          * Get summary HTML.
          * @param {String} type - Name of user e.g. "Your" or "Their".
-         * @param {(Object|null)} summary - Result from evaluateItems.
+         * @param {Object} $items - JQuery object of collection of items.
+         * @param {Boolean} isYou - Are these your items?
          * @param {Object} User - User object from steam that the items belong to.
          * @returns {String} Summary HTML.
          */
-        function dumpSummary(type, summary, User) {
-            // no summary or no items
-            if (summary === null || summary.total === 0) {
-                return '';
+        function dumpSummary(type, $items, isYou, User) {
+            /**
+             * Get summary of items.
+             * @param {Object} $items - JQuery object of collection of items.
+             * @param {Boolean} isYou - Are these your items?
+             * @returns {(Object|null)} Summary of items, null if inventory is not properly loaded.
+             */
+            function evaluateItems($items, isYou) {
+                const inventory = isYou ? INVENTORY : PARTNER_INVENTORY;
+                const total = $items.length;
+                let apps = {};
+                let items = {};
+                let valid = true;
+                
+                $items.toArray().forEach((itemEl) => {
+                    // array containing item identifiers e.g. ['440', '2', '123']
+                    const split = itemEl.id.replace('item', '').split('_'); 
+                    const [appid, contextid, assetid] = split;
+                    // get the icon image
+                    const img = itemEl.querySelector(':scope > img').getAttribute('src');
+                    const quality = itemEl.style.borderColor;
+                    const effect = itemEl.getAttribute('data-effect');
+                    const uncraft = itemEl.classList.contains('uncraft');
+                    const strange = itemEl.classList.contains('strange');
+                    const item = (
+                        inventory[appid] &&
+                        inventory[appid].rgContexts[contextid].inventory.rgInventory[assetid]
+                    );
+                    
+                    if (!item) {
+                        // not properly loaded
+                        valid = false;
+                        
+                        // stop loop
+                        return false; 
+                    }
+                    
+                    if (!apps[appid]) {
+                        apps[appid] = [];
+                    }
+                    
+                    // create json for item
+                    const json = Utils.omitEmpty({
+                        img,
+                        quality,
+                        effect,
+                        uncraft,
+                        strange
+                    });
+                    // use the json to create the key
+                    const key = JSON.stringify(json);
+                    
+                    items[key] = (items[key] || 0) + 1;
+                    apps[appid].push(assetid);
+                });
+                
+                if (!valid) {
+                    return null;
+                }
+                
+                return {
+                    total,
+                    apps,
+                    items
+                };
             }
             
             function getSummary(items, apps, steamid) {
@@ -186,6 +182,13 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
                 return `<div class="summary_header">${type} summary (${total} ${itemsStr}):</div>`;
             }
             
+            const summary = evaluateItems($items, isYou);
+            
+            // no summary or no items
+            if (summary === null || summary.total === 0) {
+                return '';
+            }
+            
             // unpack summary...
             const { total, apps, items } = summary;
             const steamid = User.strSteamId;
@@ -200,15 +203,15 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
         
         /**
          * Summarize a user's items in trade offer.
-         * @param {Boolen} you - Is this your summary?
+         * @param {Boolen} isYou - Is this your summary?
          * @returns {undefined}
          * @memberOf tradeOfferWindow
          */
-        function summarize(you) {
+        function summarize(isYou) {
             let config;
             
             // define config based on user
-            if (you) {
+            if (isYou) {
                 config = {
                     name: 'My',
                     user: UserYou,
@@ -225,39 +228,9 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
             }
             
             const $items = config.$slots.find('div.item');
-            const summary = evaluateItems($items, you);
-            const html = dumpSummary(config.name, summary, config.user);
+            const html = dumpSummary(config.name, $items, isYou, config.user);
             
             config.$container.html(html);
-        }
-        
-        /**
-         * Callback when chain has finished.
-         * @callback chain-callback
-         */
-        
-        /**
-         * Call function for each item one after another.
-         * @param {Array} items - Array.
-         * @param {Number} timeout - Time between each call.
-         * @param {Function} fn - Function to call on item.
-         * @param {chain-callback} callback - Callback when chain has finished.
-         * @returns {undefined}
-         */
-        function chain(items, timeout, fn, callback) {
-            function getNext(callback) {
-                const item = items.shift();
-                
-                if (item) {
-                    fn(item);
-                    
-                    setTimeout(getNext, timeout, callback);
-                } else {
-                    return callback();
-                }
-            }
-            
-            getNext(callback);
         }
         
         // clear items that were added to the offer
@@ -266,10 +239,6 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
             
             // remove all at once
             WINDOW.GTradeStateManager.RemoveItemsFromTrade(items.reverse());
-            
-            // remove by each item
-            // let Clear = WINDOW.MoveItemToInventory;
-            // chain(items.reverse(), 100, Clear, summarize);
         }
         
         /**
@@ -362,8 +331,6 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
                 
                 WINDOW.GTradeStateManager.m_bChangesMade = true;
             }
-            // chaining
-            // chain(items, 20, WINDOW.MoveItemToTrade, callback);
             
             if (WINDOW.Economy_UseResponsiveLayout() && WINDOW.ResponsiveTrade_SwitchMode) {
                 WINDOW.ResponsiveTrade_SwitchMode(0);
@@ -389,12 +356,12 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
         
         /**
          * Update display of buttons.
-         * @param {Boolean} you - Is your inventory selected?
+         * @param {Boolean} isYou - Is your inventory selected?
          * @param {Number} appid - AppID of inventory selected.
          * @returns {undefined}
          * @memberOf tradeOfferWindow
          */
-        function updateDisplay(you, appid) {
+        function updateDisplay(isYou, appid) {
             // update the state of the button
             const updateState = ($btn, show) => {
                 if (show) {
@@ -413,11 +380,11 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
             // 1 = sell order
             // we are buying, add items from our inventory
             const isBuying = Boolean(
-                you &&
+                isYou &&
                 listingIntent == 1
             );
-            const isSelling = (
-                !you &&
+            const isSelling = Boolean(
+                !isYou &&
                 listingIntent == 0
             );
             const showListingButton = Boolean(
@@ -451,12 +418,12 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
             }
             
             const $inventory = page.get.$inventory();
-            const you = $inventoryTab.attr('id') === 'inventory_select_your_inventory';
+            const isYou = $inventoryTab.attr('id') === 'inventory_select_your_inventory';
             const match = $inventory.attr('id').match(/(\d+)_(\d+)$/);
             const appid = (match && match[1]) || appIdFallback();
             
             // now update the dispaly
-            updateDisplay(you, appid);
+            updateDisplay(isYou, appid);
         }
         
         return {
@@ -538,7 +505,7 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
      * @param {String} mode - Mode.
      * @param {Number} amount - Number of items to pick.
      * @param {Number} index - Index to start picking items at.
-     * @param {Boolean} [you] - Your items?
+     * @param {Boolean} [isYou] - Your items?
      * @returns {Array} First value is an array of items, second is whether the amount was satisfied.
      */
     const collectItems = (function() {
@@ -587,8 +554,8 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
                 };
                 
                 // find each type of metal
-                return function(you, amount, index, name) {
-                    return pickItems(you, amount, index, (item) => {
+                return function(isYou, amount, index, name) {
+                    return pickItems(isYou, amount, index, (item) => {
                         return hasMetal(item, name);
                     });
                 };
@@ -608,16 +575,16 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
         
         /**
          * Pick items from inventory.
-         * @param {(Boolean|null)} you - Pick items from your inventory? Use null for both.
+         * @param {(Boolean|null)} isYou - Pick items from your inventory? null for both.
          * @param {Number} amount - Amount of items to pick.
          * @param {Number} index - Index to start picking items at.
          * @param {Function} finder - Finder method.
          * @returns {Array} Array of picked items.
          */
-        function pickItems(you, amount, index, finder) {
-            function getItems(you) {
-                const $items = (you ? page.$yourSlots : page.$theirSlots).find('.item');
-                const inventory = getInventory(appid, contextid, you);
+        function pickItems(isYou, amount, index, finder) {
+            function getItems(isYou) {
+                const $items = (isYou ? page.$yourSlots : page.$theirSlots).find('.item');
+                const inventory = getInventory(appid, contextid, isYou);
                 // get ids of items in trade offer matching app
                 const addedIDs = $items.toArray().reduce((arr, el) => {
                     const split = el.id.replace('item', '').split('_');
@@ -679,15 +646,15 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
             // inventory must be present
             if (!appid) {
                 return;
-            } else if (you === null) {
+            } else if (isYou === null) {
                 // get items for both users
                 return Utils.flatten([
                     true,
                     false
                 ].map(getItems));
             } else {
-                // get items for user based on whether 'you' is truthy or falsy
-                return getItems(you);
+                // get items for user based on whether 'isYou' is truthy or falsy
+                return getItems(isYou);
             }
         }
         
@@ -724,12 +691,12 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
         
         /**
          * Pick metal from items based on value in refined metal.
-         * @param {Boolean} you - Add to your side?
+         * @param {Boolean} isYou - Add to your side?
          * @param {Number} amount - Value to make in metal (e.g. 13.33).
          * @param {Number} index - Index to add at.
          * @returns {Array} First value is an array of items, second is whether the amount was satisfied.
          */
-        function getItemsForMetal(you, amount, index) {
+        function getItemsForMetal(isYou, amount, index) {
             // converts a metal value to the equivalent number of scrap emtals
             // values are rounded
             function toScrap(num) {
@@ -753,7 +720,7 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
                 const valueNeeded = amount - total;
                 const amountToAdd = Math.floor(valueNeeded / curValue);
                 // get array of metal
-                const items = finder(you, amountToAdd, index, type); 
+                const items = finder(isYou, amountToAdd, index, type); 
                 const amountAdded = Math.min(
                     amountToAdd,
                     // there isn't quite enough there...
@@ -794,14 +761,14 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
          * @param {String} mode - Mode.
          * @param {Number} amount - Number of items to pick.
          * @param {Number} index - Index to start picking items at.
-         * @param {Boolean} [you] - Your items?
+         * @param {Boolean} [isYou] - Your items?
          * @returns {Array} First value is an array of items, second is whether the amount was satisfied.
          */
-        function getItems(mode, amount, index, you) {
+        function getItems(mode, amount, index, isYou) {
             return {
                 // get keys
                 'KEYS': function() {
-                    const found = pickItems(you, amount, index, identifiers.isKey);
+                    const found = pickItems(isYou, amount, index, identifiers.isKey);
                     const items = getElementsForItems(found);
                     const satisfied = amount === items.length;
                     
@@ -815,7 +782,7 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
                     const {
                         items,
                         satisfied
-                    } = getItemsForMetal(you, amount, index);
+                    } = getItemsForMetal(isYou, amount, index);
                     
                     return {
                         items,
@@ -895,7 +862,7 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
                         found = found.reverse();
                     }
                     
-                    const $items = (you ? page.$yourSlots : page.$theirSlots).find('.item');
+                    const $items = (isYou ? page.$yourSlots : page.$theirSlots).find('.item');
                     const getItemIdFromElement = (el) => el.id.split('_')[2];
                     // creates filter for whether the id is the given list
                     // setting "mustInclude" to true will filter so that "ids" must include the id
@@ -918,7 +885,7 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
                             return mustInclude === hasId;
                         };
                     };
-                    const { appid } = getInventoryApp(you);
+                    const { appid } = getInventoryApp(isYou);
                     // get ids of items in trade offer matching app
                     const addedIDs = $items.toArray()
                         .reduce((arr, el) => {
@@ -982,8 +949,8 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
     }());
     
     // get inventory for selected app and context of user
-    function getInventory(appid, contextid, you) {
-        const user = you ? UserYou : UserThem;
+    function getInventory(appid, contextid, isYou) {
+        const user = isYou ? UserYou : UserThem;
         
         return (
             user.rgAppInfo[appid] &&
@@ -1130,10 +1097,10 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
             const match = id.match(/appselect_option_(you|them)_(\d+)_(\d+)/);
             
             if (match) {
-                const you = match[1] === 'you';
+                const isYou = match[1] === 'you';
                 const [ , , appid, contextid] = match;
                 
-                tradeOfferWindow.updateDisplay(you, appid, contextid);
+                tradeOfferWindow.updateDisplay(isYou, appid, contextid);
             }
         }
         
@@ -1147,12 +1114,12 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
             
             /**
              * Add currencies to the trade.
-             * @param {Boolean} you - Are we adding from your inventory?
+             * @param {Boolean} isYou - Are we adding from your inventory?
              * @param {Object} currencies - Object containing currencies.
              * @param {addCurrencies-callback} callback - Callback when all items have been added.
              * @returns {undefined}
              */
-            function addCurrencies(you, currencies, callback) {
+            function addCurrencies(isYou, currencies, callback) {
                 const names = Object.keys(currencies).filter((currency) => {
                     return currencies[currency] > 0;
                 });
@@ -1164,7 +1131,7 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
                     let amount = currencies[currency];
                     
                     if (currency) {
-                        addItems(currency, amount, index, you, (satisfied) => {
+                        addItems(currency, amount, index, isYou, (satisfied) => {
                             if (satisfied === false) {
                                 reasons.push(`not enough ${currency.toLowerCase()}`);
                             }
@@ -1183,9 +1150,9 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
             // 1 = sell order
             const listingIntent = urlParams.listing_intent;
             // we are buying, add items from our inventory
-            const you = listingIntent == 1;
+            const isYou = listingIntent == 1;
             
-            addCurrencies(you, {
+            addCurrencies(isYou, {
                 KEYS: parseInt(urlParams.listing_currencies_keys) || 0,
                 METAL: parseFloat(urlParams.listing_currencies_metal) || 0
             }, (reasons) => {
@@ -1231,8 +1198,8 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
         // get list of ids of items in trade offer
         function getIDs() {
             const $inventoryTab = page.get.$activeInventoryTab();
-            const you = $inventoryTab.attr('id') === 'inventory_select_your_inventory';
-            const $slots = you ? page.$yourSlots : page.$theirSlots;
+            const isYou = $inventoryTab.attr('id') === 'inventory_select_your_inventory';
+            const $slots = isYou ? page.$yourSlots : page.$theirSlots;
             const $items = $slots.find('div.item');
             
             return $items.toArray().map((el) => {
@@ -1255,7 +1222,7 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
             mode = 'ITEMS',
             amount = 1,
             index = 0,
-            you = true,
+            isYou = true,
             callback = function() {}
         ) {
             const canModify = Boolean(
@@ -1353,11 +1320,11 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
         
         // customizes the elements in the inventory
         function customizeElements(steamid, appid, contextid) {
-            const you = steamid === STEAMID;
-            const inventory = you ? INVENTORY : PARTNER_INVENTORY;
+            const isYou = steamid === STEAMID;
+            const inventory = isYou ? INVENTORY : PARTNER_INVENTORY;
             const contextInventory = inventory[appid].rgContexts[contextid].inventory.rgInventory;
             
-            if (!you) {
+            if (!isYou) {
                 // force the items in their inventory to be displayed so we can add images
                 // if their inventory has not been displayed
                 forceVisibility();
@@ -1365,7 +1332,7 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
             
             customizeItems(contextInventory);
             // re-summarize
-            tradeOfferWindow.summarize(you);
+            tradeOfferWindow.summarize(isYou);
         }
         
         /**
@@ -1437,9 +1404,9 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
     (function() {
         // observe changes to trade slots
         (function() {
-            function observeSlots(slotsEl, you) {
+            function observeSlots(slotsEl, isYou) {
                 function summarize() {
-                    tradeOfferWindow.summarize(you);
+                    tradeOfferWindow.summarize(isYou);
                     lastSummarized = new Date(); // add date
                 }
                 
@@ -1518,14 +1485,13 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
         WINDOW.EnsureSufficientTradeSlots = function(bYourSlots, cSlotsInUse, cCurrencySlotsInUse) {
             const getDesiredSlots = () => {
                 const useResponsiveLayout = WINDOW.Economy_UseResponsiveLayout();
+                const cTotalSlotsInUse = cSlotsInUse + cCurrencySlotsInUse;
                 
                 if (useResponsiveLayout) {
                     return cTotalSlotsInUse + 1;
-                } else {
-                    const cTotalSlotsInUse = cSlotsInUse + cCurrencySlotsInUse;
-                    
-                    return Math.max(Math.floor((cTotalSlotsInUse + 5) / 4) * 4, 8);
                 }
+                
+                return Math.max(Math.floor((cTotalSlotsInUse + 5) / 4) * 4, 8);
             };
             // const $slots = bYourSlots ? page.$yourSlots : page.$theirSlots;
             const $slots = bYourSlots ? $('#your_slots') : $('#their_slots');
@@ -1565,7 +1531,7 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
         // remove multiple items from a trade offer at once
         // pretty much removes all items INSTANTLY
         WINDOW.GTradeStateManager.RemoveItemsFromTrade = function(items) {
-            function checkItems(items, you) {
+            function checkItems(items, isYou) {
                 if (items.length === 0) {
                     return false;
                 }
@@ -1629,7 +1595,7 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
                             groups[appid][contextid][assetid]
                         );
                     };
-                    const slots = you ? TRADE_STATUS.me : TRADE_STATUS.them;
+                    const slots = isYou ? TRADE_STATUS.me : TRADE_STATUS.them;
                     const groups = getGroups(rgItems);
                     let assets = slots.assets;
                     let bChanged;
