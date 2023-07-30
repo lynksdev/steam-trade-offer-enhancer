@@ -256,7 +256,7 @@
 
 ## [2.1.5] - 2022-01-31
 ### Added
-- Winter 2021 effects.
+- Smissmas 2021 effects.
 
 ## [2.1.6] - 2022-03-30
 ### Added
@@ -270,3 +270,8 @@
 ## [2.1.8] - 2022-10-12
 ### Fixed
 - An issue where an item would load endlessly in some cases.
+
+## [2.1.9] - 2022-07-30
+### Added
+- Smissmas 2022 effects.
+- Summer 2023 effects.
