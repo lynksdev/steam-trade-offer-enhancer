@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Steam Trade Offer Enhancer
 // @description Browser script to enhance Steam trade offers.
-// @version     2.1.9
+// @version     2.2.0
 // @author      Julia
 // @namespace   http://steamcommunity.com/profiles/76561198080179568/
 // @updateURL   https://github.com/juliarose/steam-trade-offer-enhancer/raw/master/steam.trade.offer.enhancer.meta.js
@@ -3096,7 +3096,7 @@
     (function() {
         const DEPS = (function() {
             // current version number of script
-            const VERSION = '2.1.9';
+            const VERSION = '2.2.0';
             // our window object for accessing globals
             const WINDOW = unsafeWindow;
             // dependencies to provide to each page script    
@@ -3796,7 +3796,6 @@
                             'Toxic Grip': 3102,
                             'Infernal Grip': 3103,
                             'Death Grip': 3104,
-                            
                             'Sublime Snowstorm': 3087,
                             'Crustacean Sensation': 224,
                             'Frosted Decadence': 226,
@@ -3887,6 +3886,49 @@
                             'Floppin\' Frenzy': 3120,
                             'Pastel Trance': 3121,
                             'Wildflower Meadows': 3123,
+                            'Celestial Summit': 293,
+                            'Hellspawned Horns': 297,
+                            'Sapped': 295,
+                            'Revenant\'s Rack': 300,
+                            'Sixth Sense': 301,
+                            'Amygdala': 303,
+                            'Arachne\'s Web': 305,
+                            'Acidic Climate': 306,
+                            'Nightmarish Storm': 308,
+                            'The Bone Zone': 304,
+                            'Icestruck': 309,
+                            'Demonic Impaler': 299,
+                            'Radiant Rivalry': 313,
+                            'Goldstruck': 311,
+                            'Frosty Flavours': 315,
+                            'Radiant Legacy': 314,
+                            'Mint Frost': 317,
+                            'Stellar Ascent': 294,
+                            'North Star': 318,
+                            'Prettiest Star': 320,
+                            'Festive Falling Star': 321,
+                            'Lunar Lights': 322,
+                            'Fairy Lights': 324,
+                            'Natural Lights': 325,
+                            'Deep-sea Devourer': 3124,
+                            'Eldritch Horror': 3125,
+                            'Autumn Leaves': 3126,
+                            'Dead Man\'s Party': 3127,
+                            'Potion Explosion': 3128,
+                            'Haunted Cremation': 3129,
+                            'Cremation': 3130,
+                            'Snowfall': 3131,
+                            'Galactic Connection': 3132,
+                            'Dark Twilight': 3134,
+                            'Eldritch Rift': 3135,
+                            'Selfless Sensation': 3136,
+                            'Distant Desire': 3137,
+                            'Glamorous Glance': 3138,
+                            'Permafrost Essence': 3139,
+                            'Otherworldly Weather': 307,
+                            'Arctic Delight': 3141,
+                            'Winning Spirit': 3142,
+                            'Petal Prance': 3143
                         },
                         /**
                          * Includes effect image in element.

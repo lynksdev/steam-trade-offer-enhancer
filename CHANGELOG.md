@@ -271,7 +271,12 @@
 ### Fixed
 - An issue where an item would load endlessly in some cases.
 
-## [2.1.9] - 2022-07-30
+## [2.1.9] - 2023-07-30
 ### Added
 - Smissmas 2022 effects.
 - Summer 2023 effects.
+
+## [2.2.0] - 2023-12-25
+### Added
+- Halloween 2023 effects.
+- Smissmas 2023 effects.
