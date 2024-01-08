@@ -38,33 +38,6 @@ const Utils = {
         return result;
     },
     /**
-     * Get difference between two arrays
-     * @param {Array} arr1 - First array
-     * @param {Array} arr2 - Second array
-     * @returns {Array} Array with values removed
-     */
-    difference: function(arr1, arr2) {
-        return arr1.filter((a) => {
-            return arr2.indexOf(a) === -1;
-        });
-    },
-    /**
-     * Check if a variable is undefined, null, or an empty string ('')
-     * @param {*} value - Value to check
-     * @returns {Boolean} Is empty?
-     */
-    isEmpty: function(value) {
-        return value === undefined || value === null || value === '';
-    },
-    /**
-     * Get unique values from array
-     * @param {Array} arr - Array of basic items (strings, numbers)
-     * @returns {Array} Array with unique values
-     */
-    uniq: function(arr) {
-        return [...new Set(arr)];
-    },
-    /**
      * Get a list of IDs from a comma-seperated string
      * @param {String} str - Comma-seperated string
      * @returns {(Array|null)} Array if string is valid, null if not
