@@ -990,7 +990,12 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
     // perform actions
     // add elements to page
     (function() {
-        const controlsHTML = `
+        const $tradeBox = page.$tradeBoxContents;
+        // clearfix to add after inventories to fix height bug in firefox
+        const $clear = $('<div style="clear: both"/>');
+        
+        // add summary and control HTML to the trade box
+        $tradeBox.append(`
             <div id="controls">
                 <div class="trade_rule selectableNone"/>
                 <div class="selectableNone">Add multiple items:</div>
@@ -1040,23 +1045,11 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
                     </div>
                 </div>
             </div>  
-        `;
-        const itemSummaryHTML = `
             <div id="tradeoffer_items_summary">
                 <div class="items_summary" id="your_summary"></div>
                 <div class="items_summary" id="their_summary"></div>
             </div>
-        `;
-        const $tradeBox = page.$tradeBoxContents;
-        // clearfix to add after inventories to fix height bug in firefox
-        const $clear = $('<div style="clear: both"/>');
-        const html = [
-            controlsHTML,
-            itemSummaryHTML
-        ].join('').replace(/\s{2,}/g, ' ');
-        
-        // add it
-        $tradeBox.append(html);
+        `);
         
         // add the clear after inventories
         $clear.insertAfter(page.$inventories);
