@@ -79,18 +79,7 @@ function({ $, VERSION, WINDOW, addAttributesToHoverItems }) {
             Array.from(itemsList).forEach((itemsEl) => {
                 const itemsArr = Array.from(itemsEl.getElementsByClassName('trade_item'));
                 const getClassInfo = (itemEl) => {
-                    const classinfo = itemEl.getAttribute('data-economy-item');
-                    // I believe item classes always remain static
-                    const translateClass = {
-                        'classinfo/440/339892/11040578': 'classinfo/440/101785959/11040578',
-                        'classinfo/440/339892/11040559': 'classinfo/440/101785959/11040578',
-                        'classinfo/440/107348667/11040578': 'classinfo/440/101785959/11040578'
-                    };
-                    
-                    return (
-                        translateClass[classinfo] ||
-                        classinfo
-                    );
+                    return itemEl.getAttribute('data-economy-item');
                 };
                 // has multiples of the same item
                 const hasMultipleSameItems = Boolean(function() {

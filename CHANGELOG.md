@@ -280,3 +280,7 @@
 ### Added
 - Halloween 2023 effects.
 - Smissmas 2023 effects.
+
+## [2.2.1] - 2024-05-26
+### Fixed
+- A potential issue where items display the wrong item.

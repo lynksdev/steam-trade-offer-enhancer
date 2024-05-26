@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Steam Trade Offer Enhancer
 // @description Browser script to enhance Steam trade offers.
-// @version     2.2.0
+// @version     2.2.1
 // @author      Julia
 // @namespace   http://steamcommunity.com/profiles/76561198080179568/
 // @updateURL   https://github.com/juliarose/steam-trade-offer-enhancer/raw/master/steam.trade.offer.enhancer.meta.js
@@ -1075,18 +1075,7 @@
                         Array.from(itemsList).forEach((itemsEl) => {
                             const itemsArr = Array.from(itemsEl.getElementsByClassName('trade_item'));
                             const getClassInfo = (itemEl) => {
-                                const classinfo = itemEl.getAttribute('data-economy-item');
-                                // I believe item classes always remain static
-                                const translateClass = {
-                                    'classinfo/440/339892/11040578': 'classinfo/440/101785959/11040578',
-                                    'classinfo/440/339892/11040559': 'classinfo/440/101785959/11040578',
-                                    'classinfo/440/107348667/11040578': 'classinfo/440/101785959/11040578'
-                                };
-                                
-                                return (
-                                    translateClass[classinfo] ||
-                                    classinfo
-                                );
+                                return itemEl.getAttribute('data-economy-item');
                             };
                             // has multiples of the same item
                             const hasMultipleSameItems = Boolean(function() {
@@ -2447,7 +2436,12 @@
                 // perform actions
                 // add elements to page
                 (function() {
-                    const controlsHTML = `
+                    const $tradeBox = page.$tradeBoxContents;
+                    // clearfix to add after inventories to fix height bug in firefox
+                    const $clear = $('<div style="clear: both"/>');
+                    
+                    // add summary and control HTML to the trade box
+                    $tradeBox.append(`
                         <div id="controls">
                             <div class="trade_rule selectableNone"/>
                             <div class="selectableNone">Add multiple items:</div>
@@ -2497,23 +2491,11 @@
                                 </div>
                             </div>
                         </div>  
-                    `;
-                    const itemSummaryHTML = `
                         <div id="tradeoffer_items_summary">
                             <div class="items_summary" id="your_summary"></div>
                             <div class="items_summary" id="their_summary"></div>
                         </div>
-                    `;
-                    const $tradeBox = page.$tradeBoxContents;
-                    // clearfix to add after inventories to fix height bug in firefox
-                    const $clear = $('<div style="clear: both"/>');
-                    const html = [
-                        controlsHTML,
-                        itemSummaryHTML
-                    ].join('').replace(/\s{2,}/g, ' ');
-                    
-                    // add it
-                    $tradeBox.append(html);
+                    `);
                     
                     // add the clear after inventories
                     $clear.insertAfter(page.$inventories);
@@ -3096,7 +3078,7 @@
     (function() {
         const DEPS = (function() {
             // current version number of script
-            const VERSION = '2.2.0';
+            const VERSION = '2.2.1';
             // our window object for accessing globals
             const WINDOW = unsafeWindow;
             // dependencies to provide to each page script    
@@ -3135,33 +3117,6 @@
                     }
                     
                     return result;
-                },
-                /**
-                 * Get difference between two arrays
-                 * @param {Array} arr1 - First array
-                 * @param {Array} arr2 - Second array
-                 * @returns {Array} Array with values removed
-                 */
-                difference: function(arr1, arr2) {
-                    return arr1.filter((a) => {
-                        return arr2.indexOf(a) === -1;
-                    });
-                },
-                /**
-                 * Check if a variable is undefined, null, or an empty string ('')
-                 * @param {*} value - Value to check
-                 * @returns {Boolean} Is empty?
-                 */
-                isEmpty: function(value) {
-                    return value === undefined || value === null || value === '';
-                },
-                /**
-                 * Get unique values from array
-                 * @param {Array} arr - Array of basic items (strings, numbers)
-                 * @returns {Array} Array with unique values
-                 */
-                uniq: function(arr) {
-                    return [...new Set(arr)];
                 },
                 /**
                  * Get a list of IDs from a comma-seperated string
