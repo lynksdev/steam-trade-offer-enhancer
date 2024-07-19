@@ -92,11 +92,11 @@ function({ WINDOW, shared }) {
     addAttributesToResults();
     
     // observe changes to rows
-    (function() {
+    {
         const observer = new MutationObserver(addAttributesToResults);
         
         observer.observe(dom.resultsRows, {
             childList: true
         });
-    }());
+    }
 }

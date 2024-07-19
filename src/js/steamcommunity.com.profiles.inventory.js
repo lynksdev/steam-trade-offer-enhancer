@@ -73,7 +73,7 @@ function({ $, WINDOW, shared }) {
     }
     
     // observe changes to dom
-    (function() {
+    {
         const inventoryEl = dom.inventory;
         // wait for the tf2 inventory to be loaded
         const observer = new MutationObserver(() => {
@@ -96,5 +96,5 @@ function({ $, WINDOW, shared }) {
             childList: true,
             subtree: true
         });
-    }());
+    }
 }

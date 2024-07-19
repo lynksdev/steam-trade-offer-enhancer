@@ -7,7 +7,7 @@ function({ $, VERSION, WINDOW, addAttributesToHoverItems }) {
     // modify each trade offer
     Array.from(dom.offers).forEach((offerEl) => {
         // add buttons to the offer
-        (function () {
+        {
             const reportButtonEl = offerEl.getElementsByClassName('btn_report')[0];
             
             // sent offers will not have a report button - we won't add any buttons to them
@@ -69,10 +69,10 @@ function({ $, VERSION, WINDOW, addAttributesToHoverItems }) {
             
             // we don't really want it
             reportButtonEl.remove();
-        }());
+        }
         
         // summarize the offer
-        (function() {
+        {
             const itemsList = offerEl.getElementsByClassName('tradeoffer_item_list');
             
             // summarize each list
@@ -233,18 +233,18 @@ function({ $, VERSION, WINDOW, addAttributesToHoverItems }) {
                     itemsEl.appendChild(fragment);
                 }
             });
-        }());
+        }
     });
     
     // add attributes to images
-    (function() {
+    {
         const itemsList = document.getElementsByClassName('trade_item');
         
         addAttributesToHoverItems(itemsList);
-    }());
+    }
     
     // add the button to decline all trade offers
-    (function() {
+    {
         const { ShowConfirmDialog, ActOnTradeOffer } = WINDOW;
         // gets an array of id's of all active trade offers on page
         const getActiveTradeOfferIDs = () => {
@@ -315,5 +315,5 @@ function({ $, VERSION, WINDOW, addAttributesToHoverItems }) {
                 }
             });
         });
-    }());
+    }
 }

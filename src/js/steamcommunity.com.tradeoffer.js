@@ -989,7 +989,7 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
     
     // perform actions
     // add elements to page
-    (function() {
+    {
         const $tradeBox = page.$tradeBoxContents;
         // clearfix to add after inventories to fix height bug in firefox
         const $clear = $('<div style="clear: both"/>');
@@ -1079,10 +1079,10 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
             $addIDs: $('#btn_addids'),
             $getIDs: $('#btn_getids')
         };
-    }());
+    }
     
     // binds events to elements
-    (function() {
+    {
         // the user changed from one app to another
         function appChanged(app) {
             const $app = $(app);
@@ -1234,7 +1234,12 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
                 const {
                     items,
                     satisfied
-                } = collectItems(...arguments);
+                } = collectItems(
+                    mode,
+                    amount,
+                    index,
+                    isYou
+                );
                 
                 tradeOfferWindow.addItems(items, () => {
                     return callback(satisfied);
@@ -1283,10 +1288,10 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
         page.$document.on('keypress', (e) => {
             keyPressed(e);
         });
-    }());
+    }
     
     // register inventory events
-    (function() {
+    {
         // this will force an inventory to load
         function forceInventory(appid, contextid) {
             TRADE_STATUS.them.assets.push({
@@ -1391,12 +1396,12 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
         [STEAMID, PARTNER_STEAMID].forEach((steamid) => {
             inventoryManager.register(steamid, '440', '2', customizeElements);
         });
-    }());
+    }
     
     // observe changes to dom
-    (function() {
+    {
         // observe changes to trade slots
-        (function() {
+        {
             function observeSlots(slotsEl, isYou) {
                 function summarize() {
                     tradeOfferWindow.summarize(isYou);
@@ -1433,10 +1438,10 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
             
             observeSlots(page.$yourSlots[0], true);
             observeSlots(page.$theirSlots[0], false);
-        }());
+        }
         
         // observe inventory changes
-        (function() {
+        {
             const observer = new MutationObserver((mutations) => {
                 if (!mutations[0].addedNodes) return;
                 
@@ -1453,11 +1458,11 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
                 characterData: false,
                 subtree: false
             });
-        }());
-    }());
+        }
+    }
     
     // configure state
-    (function () {
+    {
         tradeOfferWindow.userChanged(page.get.$activeInventoryTab());
         
         if (getStored(stored.id_visible) == 1) {
@@ -1469,10 +1474,10 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
             
             page.btns.$listing.addClass(isSelling ? 'selling' : 'buying');
         }
-    }());
+    }
     
     // override page functions
-    (function() {
+    {
         // basically removes animation due to bugginess
         // also it's a bit faster
         WINDOW.EnsureSufficientTradeSlots = function(bYourSlots, cSlotsInUse, cCurrencySlotsInUse) {
@@ -1624,5 +1629,5 @@ function({ WINDOW, $, Utils, shared, getStored, setStored }) {
                 manager.UpdateTradeStatus();
             }
         };
-    }());
+    }
 }
