@@ -1174,7 +1174,7 @@ function main({ WINDOW, $, Utils, shared, getStored, setStored }) {
                 for (let i = 0; i < names.length; i++) {
                     const currency = names[i];
                     const amount = currencies[currency];
-                    const satisfied = await addItems(currency, amount, index, isYou);
+                    const satisfied = addItems(currency, amount, index, isYou);
                     
                     if (satisfied === false) {
                         reasons.push(`not enough ${currency.toLowerCase()}`);
@@ -1276,9 +1276,9 @@ function main({ WINDOW, $, Utils, shared, getStored, setStored }) {
          * @param {number} amount - Amount of items to add.
          * @param {number} index - Index to start adding at.
          * @param {boolean} isYou - Are we adding from your inventory?
-         * @returns {Promise<(boolean|null)>} Whether the amount was satisfied. Null if the offer cannot be modified.
+         * @returns {(boolean|null)} Whether the amount was satisfied. Null if the offer cannot be modified.
          */
-        async function addItems(
+        function addItems(
             mode = 'ITEMS',
             amount = 1,
             index = 0,

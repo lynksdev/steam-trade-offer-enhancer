@@ -144,6 +144,7 @@ const Utils = {
             // the second value is the currency name
             const match = prices[i].trim().match(/^([\d\.]*) (\w*)$/i);
             const value = parseFloat(match[1]);
+            const currency = match[2].toLowerCase();
             
             switch (currency) {
                 case 'keys':
