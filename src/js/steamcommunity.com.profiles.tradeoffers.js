@@ -1,5 +1,5 @@
 // @include /^https?:\/\/steamcommunity\.com\/(?:id|profiles)\/.*\/tradeoffers/
-function({ $, VERSION, WINDOW, addAttributesToHoverItems }) {
+function main({ WINDOW, addAttributesToHoverItems }) {
     const dom = {
         offers: document.getElementsByClassName('tradeoffer')
     };

@@ -2,6 +2,14 @@
 const WINDOW = unsafeWindow;
 // dependencies to provide to each page script    
 const $ = WINDOW.jQuery;
+
+/**
+ * Currencies.
+ * @typedef {Object} Currencies
+ * @property {number} [keys] - Number of keys.
+ * @property {number} [metal] - Amount of metal.
+ */
+
 /**
  * Utility functions
  * @namespace Utils
@@ -11,7 +19,7 @@ const Utils = {
      * Get URL parameters
      * @returns {Object} Object containing url parameters e.g. {'item': 'Fruit Shoot'}
      */
-    getURLParams: function() {
+    getURLParams() {
         const params = {};
         const pattern = /[?&]+([^=&]+)=([^&]*)/gi;
         
@@ -23,10 +31,10 @@ const Utils = {
     },
     /**
      * Omits keys with values that are empty from object.
-     * @param {Object} obj - Object to omit values from.
-     * @returns {Object} Object with null, undefined, or empty string values omitted.
+     * @param {Object<string, *>} obj - Object to omit values from.
+     * @returns {Object<string, *>} Object with null, undefined, or empty string values omitted.
      */
-    omitEmpty: function(obj) {
+    omitEmpty(obj) {
         const result = {};
         
         for (let k in obj) {
@@ -38,11 +46,11 @@ const Utils = {
         return result;
     },
     /**
-     * Get a list of IDs from a comma-seperated string
-     * @param {String} str - Comma-seperated string
-     * @returns {(Array|null)} Array if string is valid, null if not
+     * Gets a list of IDs from a comma-seperated string.
+     * @param {string} str - Comma-seperated string.
+     * @returns {(string[]|null)} Array of id's if string is valid, null if not.
      */
-    getIDsFromString: function(str) {
+    getIDsFromString(str) {
         if (/(\d+)(,\s*\d+)*/.test(str)) {
             return str.split(',');
         }
@@ -50,12 +58,11 @@ const Utils = {
         return null;
     },
     /**
-     * Execute hot key command
-     * @param {Object} e - Event
-     * @param {Object} hotKeys - Hot keys mapped to functions
-     * @returns {undefined}
+     * Executes hot key command
+     * @param {Event} e - Event.
+     * @param {Object} hotKeys - Hot keys mapped to functions.
      */
-    execHotKey: function(e, hotKeys) {
+    execHotKey(e, hotKeys) {
         const isTextField = (
             /textarea|select/i.test(e.target.nodeName) || 
             ['number', 'text'].indexOf(e.target.type) !== -1
@@ -68,20 +75,21 @@ const Utils = {
         }
     },
     /**
-     * Flatten arrays
-     * @param {Array} arrays - Array of arrays
-     * @returns {Array} Flatten array
+     * Flattens an array.
+     * @param {(*[] | *)[]} arr - Array to flatten.
+     * @returns {*[]} Flattened array.
      */
-    flatten: function(arrays) {
+    flatten(arrays) {
         return [].concat(...arrays);
     },
     /**
-     * Partition array based on conditions
-     * @param {Array} arr - Array
-     * @param {Function} fn - Function to satisfy
-     * @returns {Array} Partitioned array
+     * Partitions array based on conditions.
+     * @template T
+     * @param {T[]} arr - Array.
+     * @param {function(T): boolean} method - Function to satisfy.
+     * @returns {[T[], T[]]} Partitioned array.
      */
-    partition: function(arr, fn) {
+    partition(arr, fn) {
        let result = [[], []];
        
        for (let i = 0; i < arr.length; i++) {
@@ -91,12 +99,13 @@ const Utils = {
        return result;
     },
     /**
-     * Group an array by value from key
-     * @param {Array} arr - Array
-     * @param {String} key - Key to take value from
-     * @returns {Object} Object of groups
+     * Groups an array by value from key.
+     * @template T
+     * @param {T[]} arr - Array.
+     * @param {(string | function(T): (number | string))} key - Key to take value from.
+     * @returns {Object<string, T[]>} Object of groups.
      */
-    groupBy: function(arr, key) {
+    groupBy(arr, key) {
         return arr.reduce((a, b) => {
             (a[b[key]] = a[b[key]] || []).push(b);
             
@@ -104,11 +113,10 @@ const Utils = {
         }, {});
     },
     /**
-     * Copy a value to clipboard
-     * @param {String} str - String to copy
-     * @returns {undefined}
+     * Copies a value to clipboard.
+     * @param {string} str - String to copy.
      */
-    copyToClipboard: function(str) {
+    copyToClipboard(str) {
         const el = document.createElement('textarea');
         
         el.value = str;
@@ -118,11 +126,11 @@ const Utils = {
         document.body.removeChild(el);
     },
     /**
-     * Convert a currency string to a currency object
-     * @param {String} string - String to parse
-     * @returns {(Object|null)} Object of currencies if string is valid
+     * Converts a currency string to a currency object.
+     * @param {string} string - String to parse.
+     * @returns {(Currencies|null)} Object of currencies if string is valid.
      */
-    stringToCurrencies: function(string) {
+    stringToCurrencies(string) {
         // mptf cross listing has no listing_price
         if (!string) {
             return null;
@@ -130,25 +138,22 @@ const Utils = {
         
         const prices = string.split(',');
         const currencies = {};
-        const currencyNames = {
-            'metal': 'metal',
-            'ref': 'metal',
-            'keys': 'keys',
-            'key': 'keys'
-        };
         
         for (let i = 0; i < prices.length; i++) {
             // match currencies - the first value is the amount
             // the second value is the currency name
             const match = prices[i].trim().match(/^([\d\.]*) (\w*)$/i);
-            const currency = currencyNames[match[2]];
             const value = parseFloat(match[1]);
             
-            if (currency) {
-                currencies[currency] = value;
-            } else {
-                // something isn't right
-                return null;
+            switch (currency) {
+                case 'keys':
+                case 'key':
+                    currencies.keys = value;
+                    break;
+                case 'metal':
+                case 'ref':
+                    currencies.metal = value;
+                    break;
             }
         }
         
@@ -166,7 +171,7 @@ const shared = {
         // helpers for identifying items
         identifiers: {
             // checks if the item is a rare tf2 key
-            isRareTF2Key: function(item) {
+            isRareTF2Key(item) {
                 const { appdata } = item;
                 // array of rare TF2 keys (defindexes)
                 const rare440Keys = [
@@ -196,7 +201,7 @@ const shared = {
             },
             // detects certain attributes from an item
             // this is used heavily and should be as optimized as possible
-            getItemAttributes: function(item) {
+            getItemAttributes(item) {
                 const hasDescriptions = typeof item.descriptions === 'object';
                 const attributes = {
                     color: (item.name_color || '').toUpperCase()
@@ -293,7 +298,7 @@ const shared = {
                 return attributes;
             },
             // adds attributes to item element
-            addAttributes: function(item, itemEl) {
+            addAttributes(item, itemEl) {
                 const {
                     getItemAttributes,
                     addAttributesToElement
@@ -303,7 +308,7 @@ const shared = {
                 addAttributesToElement(itemEl, attributes);
             },
             // adds attributes to item element
-            addAttributesToElement: function(itemEl, attributes) {
+            addAttributesToElement(itemEl, attributes) {
                 // already checked
                 if (itemEl.hasAttribute('data-checked')) {
                     return;
@@ -806,11 +811,10 @@ const shared = {
             },
             /**
              * Includes effect image in element.
-             * @param {Object} itemEl - DOM element.
+             * @param {HTMLElement} itemEl - DOM element.
              * @param {Object} value - Value for Unusual effect.
-             * @returns {undefined}
              */
-            modifyElement: function(itemEl, value) {
+            modifyElement(itemEl, value) {
                 const url = shared.offers.unusual.getEffectURL(value);
                 
                 itemEl.style.backgroundImage = `url('${url}')`;
@@ -818,26 +822,28 @@ const shared = {
             },
             /**
              * Gets the effect value from an effect name.
-             * @param {String} effectName - Effect name.
-             * @returns {(String|undefined)} Effect value, if available.
+             * @param {string} effectName - Effect name.
+             * @returns {string|undefined} Effect value, if available.
              */
-            getEffectValue: function(effectName) {
+            getEffectValue(effectName) {
                 return shared.offers.unusual.effectsMap[effectName];
             },
             /**
              * Gets URL of image for effect.
-             * @param {Number} value - Value of effect.
-             * @returns {String} URL string
+             * @param {number} value - Value of effect.
+             * @returns {string} URL string
              */
-            getEffectURL: function(value) {
+            getEffectURL(value) {
                 return `https://backpack.tf/images/440/particles/${value}_94x94.png`;
             }
         }
     }
 };
 
-// adds attribute display properties to a list of hoverable items (e.g. in trade offers or steam profiles)
-// itemsList is of type NodeList or Array
+/**
+ * Adds attribute display properties to a list of hoverable items (e.g. in trade offers or steam profiles).
+ * @param {NodeList|HTMLElement[]} itemsList - List of items to add attributes to.
+ */
 function addAttributesToHoverItems(itemsList) {
     if (itemsList.length === 0) {
         // nothing to do

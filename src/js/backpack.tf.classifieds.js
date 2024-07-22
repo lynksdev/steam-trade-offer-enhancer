@@ -1,5 +1,5 @@
 // @include /^https?:\/\/(.*\.)?backpack\.tf(:\\d+)?\/(stats|classifieds).*/
-function({ Utils }) {
+function main({ Utils }) {
     const dom = {
         listingsElList: document.getElementsByClassName('listing')
     };

@@ -1,5 +1,5 @@
 // @include /^https?:\/\/steamcommunity\.com\/market\/listings\/440\/.*/
-function({ WINDOW, shared }) {
+function main({ WINDOW, shared }) {
     const dom = {
         resultsRows: document.getElementById('searchResultsRows')
     };
