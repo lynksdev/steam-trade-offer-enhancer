@@ -1,6 +1,6 @@
 // our window object for accessing globals
 const WINDOW = unsafeWindow;
-// dependencies to provide to each page script    
+// dependencies to provide to each page script
 const $ = WINDOW.jQuery;
 
 /**
@@ -17,7 +17,7 @@ const $ = WINDOW.jQuery;
 const Utils = {
     /**
      * Get URL parameters
-     * @returns {Object} Object containing url parameters e.g. {'item': 'Fruit Shoot'}
+     * @returns {Object<string, string>} Object containing url parameters e.g. {'item': 'Fruit Shoot'}
      */
     getURLParams() {
         const params = {};
@@ -145,6 +145,10 @@ const Utils = {
             const match = prices[i].trim().match(/^([\d\.]*) (\w*)$/i);
             const value = parseFloat(match[1]);
             const currency = match[2].toLowerCase();
+            
+            if (isNaN(value)) {
+                return null;
+            }
             
             switch (currency) {
                 case 'keys':
@@ -808,7 +812,45 @@ const shared = {
                 'Otherworldly Weather': 307,
                 'Arctic Delight': 3141,
                 'Winning Spirit': 3142,
-                'Petal Prance': 3143
+                'Petal Prance': 3143,
+                'Violent Viridian': 333,
+                'Magenta Monstrum': 334,
+                'Rainbow Reverie': 335,
+                'Cuban Smoke': 336,
+                'Melting Mohawk': 337,
+                'Scorched Scalp': 339,
+                'Ignited Crest': 340,
+                'Rare Shine': 341,
+                'Distant Drift': 342,
+                'Warp Drive': 344,
+                'Overdrive': 345,
+                'Butterfly Season': 346,
+                'Psycho-delic': 348,
+                'Bewitching Bugs': 349,
+                'Dragonflies Nature Nature': 3147,
+                'Dragonflies Lucent Lucent': 3148,
+                'Electrocution': 3149,
+                'Distress Signal': 3151,
+                'Cariocas Calls Call': 3153,
+                'Fiesta Royale': 3154,
+                'Grand Jubilee': 3156,
+                'Elemental': 3157,
+                'Godlike': 3159,
+                'Teamwork Valorance': 3160,
+                'Legacy Logo': 3162,
+                'Lure of the Deep': 331,
+                'Loyalists Coronets Coronet': 327,
+                'Knights Prideful Spirits Prideful Spirit': 329,
+                'Barons Cherished Chaplets Cherished Chaplet': 330,
+                'Dragonflies Embrace Embrace': 3145,
+                'Desert Wind': 3163,
+                'Monsoon Season': 3164,
+                'Bountiful Riches': 3165,
+                'Luxurious Lover': 3167,
+                'Amatory': 3168,
+                'Electrum': 3170,
+                'Sakura Blessings': 3171,
+                'Violent Violets': 3173,
             },
             /**
              * Includes effect image in element.

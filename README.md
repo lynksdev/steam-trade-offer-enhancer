@@ -27,6 +27,7 @@ Fork of [Steam Trade Offer Enhancer by scholtzm](https://github.com/scholtzm/ste
 - Uncraftable items are displayed with a dashed border.
 - Strangified items (e.g. "Strange Unusual" items) have an orange colored border.
 - Spelled items display an icon.
+- Clicking on item summaries will open the user's backpack with the items selected on backpack.tf.
 
 ### ```https://steamcommunity.com/profiles/<steamid>/tradeoffers```<br/>```https://steamcommunity.com/id/<id>/tradeoffers```
 - Quick links to backpack.tf and Rep.tf pages on offers.
@@ -60,4 +61,4 @@ Files for each page are broken down within the src directory which are then join
 
 # Donations
 
-If you found this tool useful and want to give something for my time you can [send me an offer](https://steamcommunity.com/tradeoffer/new/?partner=119913840&token=ybdKNJEA).
+If you found this tool useful and want to give something for my time you can donate items by [sending me an offer](https://steamcommunity.com/tradeoffer/new/?partner=119913840&token=ybdKNJEA).

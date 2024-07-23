@@ -606,10 +606,11 @@ function main({ WINDOW, $, Utils, shared, getStored, setStored }) {
                 const inventory = getInventory(appid, contextid, isYou);
                 // get ids of items in trade offer matching app
                 const addedIDs = $items.toArray().reduce((arr, el) => {
-                    const split = el.id.replace('item', '').split('_');
-                    const [iAppid, , assetid] = split;
+                    const item = el.rgItem;
+                    const assetid = item.id;
                     
-                    if (iAppid === appid) {
+                    // appids could be string or number
+                    if (item.appid == appid) {
                         arr.push(assetid);
                     }
                     
@@ -926,10 +927,11 @@ function main({ WINDOW, $, Utils, shared, getStored, setStored }) {
                     // get ids of items in trade offer matching app
                     const addedIDs = $items.toArray()
                         .reduce((arr, el) => {
-                            const split = el.id.replace('item', '').split('_');
-                            const [iAppid, , assetid] = split;
+                            const rgItem = el.rgItem;
+                            const assetid = rgItem.id;
                             
-                            if (iAppid === appid) {
+                            // appids could be string or number
+                            if (rgItem.appid == appid) {
                                 arr.push(assetid);
                             }
                             
@@ -1251,9 +1253,8 @@ function main({ WINDOW, $, Utils, shared, getStored, setStored }) {
             const $items = $slots.find('div.item');
             
             return $items.toArray().map((el) => {
-                // array containing item identifiers e.g. ['440', '2', '123']
-                const split = (el.id || '').replace('item', '').split('_'); 
-                const assetid = split[2];
+                const rgItem = el.rgItem;
+                const assetid = rgItem.id;
                 
                 return assetid;
             });
@@ -1309,9 +1310,8 @@ function main({ WINDOW, $, Utils, shared, getStored, setStored }) {
                 
                 // add items: 691.0009765625 ms
                 // add items: 202.3779296875 ms
-                console.time('add items');
+                // add  items: 178.66015625 ms
                 tradeOfferWindow.addItemsByElements(items);
-                console.timeEnd('add items');
                 
                 return satisfied;
             }
@@ -1548,20 +1548,32 @@ function main({ WINDOW, $, Utils, shared, getStored, setStored }) {
     
     // override page functions
     {
+        // hides an element
+        function hideElement(el) {
+            el.style.display = 'none';
+        }
+        
+        // shows an element
+        function showElement(el) {
+            el.style.display = '';
+        }
+        
+        // This is a very slow function when many items are involved, most of the function isn't changed.
+        // Performance of this function was improved by around 2x
         WINDOW.UpdateSlots = function( rgSlotItems, rgCurrency, bYourSlots, user, version ) {
             const { $ } = WINDOW;
-            const slotPrefix = bYourSlots ? 'your_slot_' : 'their_slot_';
-            const elSlotContainer = bYourSlots ? $('your_slots') : $('their_slots');
+            // const elSlotContainer = bYourSlots ? $('your_slots') : $('their_slots');
+            const slotContainerEl = bYourSlots ? document.getElementById('your_slots') : document.getElementById('their_slots');
             const elCurrencySlotContainer = bYourSlots ? $('your_slots_currency') : $('their_slots_currency');
             
             // see what the last slot with an item is
-            var cMaxSlotId = 0;
+            let cMaxSlotId = 0;
             
             if ( rgSlotItems instanceof Array ) {
                 cMaxSlotId = rgSlotItems.length;
             } else {
-                for ( var slotid in rgSlotItems ) {
-                    var iSlot = parseInt( slotid );
+                for ( let slotid in rgSlotItems ) {
+                    let iSlot = parseInt( slotid );
                     
                     if ( iSlot && !isNaN( iSlot ) ) {
                         cMaxSlotId = Math.max( iSlot, cMaxSlotId );
@@ -1571,13 +1583,13 @@ function main({ WINDOW, $, Utils, shared, getStored, setStored }) {
                 cMaxSlotId++;
             }
             
-            var cCurrenciesInTrade = 0;
+            let cCurrenciesInTrade = 0;
             
-            for ( var iCurrency = 0; iCurrency < rgCurrency.length; iCurrency++ ) {
-                var currencyUpdate = rgCurrency[iCurrency];
+            for ( let iCurrency = 0; iCurrency < rgCurrency.length; iCurrency++ ) {
+                const currencyUpdate = rgCurrency[iCurrency];
                 
                 // just skip pending inventories, the currency will be drawn after the inventory arrival
-                var inventory = user.getInventory( currencyUpdate.appid, currencyUpdate.contextid );
+                const inventory = user.getInventory( currencyUpdate.appid, currencyUpdate.contextid );
                 
                 if ( !inventory || inventory.BIsPendingInventory() ) {
                     continue;
@@ -1585,8 +1597,8 @@ function main({ WINDOW, $, Utils, shared, getStored, setStored }) {
                 
                 cCurrenciesInTrade++;
                 
-                var currency = user.FindCurrency( currencyUpdate.appid, currencyUpdate.contextid, currencyUpdate.currencyid );
-                var stack = WINDOW.GetTradeItemStack( user, currency );
+                const currency = user.FindCurrency( currencyUpdate.appid, currencyUpdate.contextid, currencyUpdate.currencyid );
+                const stack = WINDOW.GetTradeItemStack( user, currency );
                 
                 if ( ( parseInt( stack.amount ) + parseInt( stack.fee ) ) != currencyUpdate.amount ) {
                     WINDOW.UpdateTradeItemStackDisplay( currency, stack, currencyUpdate.amount );
@@ -1599,16 +1611,19 @@ function main({ WINDOW, $, Utils, shared, getStored, setStored }) {
                 stack.version = version;
             }
             
-            var rgCurrencySlots = elCurrencySlotContainer.childElements();
+            const rgCurrencySlots = elCurrencySlotContainer.children;
             
             if ( cCurrenciesInTrade < rgCurrencySlots.length ) {
                 // there's an extra slot in the trade, remove it
-                for ( var iCurrencySlot = 0; iCurrencySlot < rgCurrencySlots.length; iCurrencySlot++ ) {
-                    var elSlot = rgCurrencySlots[iCurrencySlot];
-                    var stack = elSlot.stack;
+                for ( let iCurrencySlot = 0; iCurrencySlot < rgCurrencySlots.length; iCurrencySlot++ ) {
+                    const elSlot = rgCurrencySlots[iCurrencySlot];
+                    const stack = elSlot.stack;
+                    
                     if ( stack.version < version ) {
                         elSlot.remove();
-                        var origCurrency = user.FindCurrency( stack.appid, stack.contextid, stack.id );
+                        
+                        const origCurrency = user.FindCurrency( stack.appid, stack.contextid, stack.id );
+                        
                         origCurrency.amount = origCurrency.original_amount;
                         origCurrency.trade_stack = null;
                         
@@ -1621,32 +1636,37 @@ function main({ WINDOW, $, Utils, shared, getStored, setStored }) {
             
             WINDOW.EnsureSufficientTradeSlots( bYourSlots, cMaxSlotId, cCurrenciesInTrade );
             
-            var nNumBadItems = 0;
-            var firstBadItem = null;
-            var nNumExpiringItems = 0;
-            var firstExpiringItem = null;
-            var nFullInventoryAppId = false;
+            let nNumBadItems = 0;
+            let firstBadItem = null;
+            let nNumExpiringItems = 0;
+            let firstExpiringItem = null;
+            let nFullInventoryAppId = false;
             
+            const slotsList = slotContainerEl.children;
+            
+            // this is where the majority of the time is spent
             // 348.0029296875 ms
             // 251.383056640625 ms
-            const slotsList = elSlotContainer.childElements();
-            
-            for ( var slot = 0; slot < slotsList.length; slot++ ) {
-                // simply taking from the slotsList cuts the time by about 1/3
+            // 178.10400390625 ms
+            for ( let slot = 0; slot < slotsList.length; slot++ ) {
+                // simply taking from an array rather than querying each slot cuts the time by about 1/3
                 const elSlot = slotsList[slot];
-                var elCurItem = elSlot.down('.slot_inner').firstDescendant();
-                var elNewItem = null;
-                
-                var bRemoveCurItem = ( elCurItem != null );
-                
-                var bItemIsNewToTrade = false;  //lets us know if we need to indicate this item was added
-                var bStackAmountChanged = false;	// if a stackable item's amount has changed, we also treat that like new
+                // elCurItem.rgItem is available using querySelector
+                const elCurItem = elSlot.querySelector('.item');
+                let elNewItem = null;
+                let bRemoveCurItem = elCurItem != null;
+                // lets us know if we need to indicate this item was added
+                let bItemIsNewToTrade = false; 
+                // if a stackable item's amount has changed, we also treat that like new
+                let bStackAmountChanged = false;
                 
                 if ( rgSlotItems[slot] ) {
-                    var appid = rgSlotItems[slot].appid;
-                    var contextid = rgSlotItems[slot].contextid;
-                    var itemid = rgSlotItems[slot].assetid;
-                    var amount = rgSlotItems[slot].amount;
+                    const {
+                        appid,
+                        contextid,
+                        assetid,
+                        amount
+                    } = rgSlotItems[slot];
                     
                     // check that we are allowed to receive this item
                     if ( !bYourSlots ) {
@@ -1663,14 +1683,18 @@ function main({ WINDOW, $, Utils, shared, getStored, setStored }) {
                         }
                     }
                     
-                    var elItem = user.findAssetElement( appid, contextid, itemid );
+                    // this doesn't do any DOM querying
+                    const elItem = user.findAssetElement( appid, contextid, assetid );
                     
-                    if ( g_dateEscrowEnd != null && typeof elItem.rgItem.item_expiration == 'string' ) {
-                        var dateExpiration = new Date( elItem.rgItem.item_expiration );
+                    if (
+                        g_dateEscrowEnd != null &&
+                        elItem.rgItem &&
+                        typeof elItem.rgItem.item_expiration == 'string'
+                    ) {
+                        const dateExpiration = new Date( elItem.rgItem.item_expiration );
                         
                         if ( g_dateEscrowEnd >= dateExpiration ) {
-                            if ( nNumExpiringItems == 0 )
-                            {
+                            if ( nNumExpiringItems == 0 ) {
                                 firstExpiringItem = rgSlotItems[slot];
                             }
                             
@@ -1683,28 +1707,31 @@ function main({ WINDOW, $, Utils, shared, getStored, setStored }) {
                         elCurItem.rgItem &&
                         elCurItem.rgItem.appid == appid &&
                         elCurItem.rgItem.contextid == contextid &&
-                        elCurItem.rgItem.id == itemid &&
+                        elCurItem.rgItem.id == assetid &&
                         !elCurItem.rgItem.unknown
                     ) {
                         // it's already there
                         bRemoveCurItem = false;
                         
                         if ( elCurItem.rgItem.is_stackable ) {
-                            var stack = elCurItem.rgItem;
+                            const stack = elCurItem.rgItem;
+                            
                             bStackAmountChanged = ( amount != stack.amount );
                             WINDOW.UpdateTradeItemStackDisplay( stack.parent_item, stack, amount );
                         }
                     } else {
                         // it's new to the trade
                         elNewItem = elItem;
-                        var item = elNewItem.rgItem;
+                        
+                        const item = elNewItem.rgItem;
                         
                         if ( !item.unknown ) {
                             bItemIsNewToTrade = true;
                         }
                         
                         if ( item.is_stackable ) {
-                            var stack = WINDOW.GetTradeItemStack( user, item );
+                            const stack = WINDOW.GetTradeItemStack( user, item );
+                            
                             bStackAmountChanged = ( amount != stack.amount );
                             WINDOW.UpdateTradeItemStackDisplay( item, stack, amount );
                             
@@ -1712,23 +1739,34 @@ function main({ WINDOW, $, Utils, shared, getStored, setStored }) {
                         }
                         
                         if ( elNewItem && elNewItem.parentNode ) {
-                            if ( $(elNewItem.parentNode).down('.slot_actionmenu_button') ) {
-                                $(elNewItem.parentNode).down('.slot_actionmenu_button').hide();
+                            const slotActionMenuButtonEl = elNewItem.parentNode.querySelector('.slot_actionmenu_button');
+                            
+                            if ( slotActionMenuButtonEl ) {
+                                // hide the button
+                                // on steam's end this would normally be called with .hide()
+                                // but that's not available with vanilla methods
+                                hideElement(slotActionMenuButtonEl);
                             }
                             
                             if ( WINDOW.BIsInTradeSlot( elNewItem ) ) {
+                                // this is called when a slot is cleared
+                                // all subsequent slots are also cleared to move items up 
                                 WINDOW.CleanupSlot( elNewItem.parentNode.parentNode );
                                 bItemIsNewToTrade = false;
                             }
                             
+                            // remove element from its current location
                             elNewItem.remove();
                         }
                     }
                 }
                 
                 if ( elCurItem && bRemoveCurItem ) {
+                    // this block isn't usually reached from my experience
+                    
                     if ( elCurItem.rgItem && elCurItem.rgItem.is_stackable ) {
-                        var stack = elCurItem.rgItem;
+                        const stack = elCurItem.rgItem;
+                        
                         WINDOW.UpdateTradeItemStackDisplay( stack.parent_item, stack, 0 );
                         elCurItem.remove();
                     } else if ( elCurItem.rgItem && elCurItem.rgItem.homeElement ) {
@@ -1741,6 +1779,7 @@ function main({ WINDOW, $, Utils, shared, getStored, setStored }) {
                 }
                 
                 if ( elNewItem ) {
+                    // this is called when an item is added to a slot
                     WINDOW.PutItemInSlot( elNewItem, elSlot );
                     
                     if ( bItemIsNewToTrade && !bYourSlots && !WINDOW.g_bTradeOffer ) {
@@ -1759,8 +1798,8 @@ function main({ WINDOW, $, Utils, shared, getStored, setStored }) {
                 g_nItemsFromContextWithNoPermissionToReceive = nNumBadItems;
                 
                 if ( nNumBadItems > 0 ) {
-                    var strEvent = "";
-                    var item = user.findAsset( firstBadItem.appid, firstBadItem.contextid, firstBadItem.assetid );
+                    let strEvent = "";
+                    const item = user.findAsset( firstBadItem.appid, firstBadItem.contextid, firstBadItem.assetid );
                     if ( item ) {
                         if ( nNumBadItems == 1 ) {
                             strEvent = 'You are not allowed to receive the item "%1$s."'
@@ -1780,14 +1819,14 @@ function main({ WINDOW, $, Utils, shared, getStored, setStored }) {
                     }
                     
                     if ( nFullInventoryAppId ) {
-                        var rgAppData = g_rgAppContextData[nFullInventoryAppId];
-                        var strEventAppend = 'Your inventory for %1$s is full.'
+                        const rgAppData = g_rgAppContextData[nFullInventoryAppId];
+                        const strEventAppend = 'Your inventory for %1$s is full.'
                                 .replace( '%1$s', rgAppData.name.escapeHTML() );
                         
                         strEvent = strEvent + ' ' + strEventAppend;
                     }
                     
-                    var elEvent = new Element( 'div', {'class': 'logevent' } );
+                    const elEvent = new Element( 'div', {'class': 'logevent' } );
                     elEvent.update( strEvent );
                     $('log').appendChild( elEvent );
                 }
@@ -1797,8 +1836,9 @@ function main({ WINDOW, $, Utils, shared, getStored, setStored }) {
                 WINDOW.g_rgnItemsExpiringBeforeEscrow[bYourSlots ? 0 : 1] = nNumExpiringItems;
                 
                 if ( nNumExpiringItems > 0 ) {
-                    var strEvent = "";
-                    var item = user.findAsset( firstExpiringItem.appid, firstExpiringItem.contextid, firstExpiringItem.assetid );
+                    let strEvent = "";
+                    const item = user.findAsset( firstExpiringItem.appid, firstExpiringItem.contextid, firstExpiringItem.assetid );
+                    
                     if ( item ) {
                         if ( nNumExpiringItems == 1 ) {
                             strEvent = 'The item "%1$s" cannot be included in this trade because it will expire before the trade hold period is over.'
@@ -1815,36 +1855,91 @@ function main({ WINDOW, $, Utils, shared, getStored, setStored }) {
                         }
                     }
                     
-                    var elEvent = new Element( 'div', {'class': 'logevent' } );
+                    const elEvent = new Element( 'div', {'class': 'logevent' } );
                     elEvent.update( strEvent );
                     $('log').appendChild( elEvent );
                 }
             }
         };
         
-        WINDOW.CreateTradeSlot = function(bIsYourSlot, iSlot) {
-            const $slots = bIsYourSlot ? page.$yourSlots : page.$theirSlots;
-            const elSlotContainer = $slots[0];
-            const elSlot = createTradeSlotElement(bIsYourSlot, iSlot);
+        // This is one of the hottest functions in UpdateSlots
+        // There were some inefficient queries in the original function
+        WINDOW.PutItemInSlot = function( elItem, elSlot ) {
+            const item = elItem.rgItem;
             
-            elSlotContainer.appendChild( elSlot );
+            if (
+                elItem.parentNode &&
+                elItem.parentNode.nodeType != Node.DOCUMENT_FRAGMENT_NODE /* IE cruft */
+            ) {
+                hideElement(elItem.parentNode.querySelector('.slot_actionmenu_button'));
+                elItem.remove();
+            }
             
-            return elSlot;
+            elSlot.querySelector('.slot_inner').appendChild( elItem );
+            
+            if ( item && item.appid && WINDOW.g_rgAppContextData[item.appid] ) {
+                const rgAppData = WINDOW.g_rgAppContextData[item.appid];
+                const slotAppLogo = elSlot.querySelector('.slot_applogo');
+                
+                slotAppLogo.querySelector('img').src = rgAppData.icon;
+                showElement(slotAppLogo);
+                
+                if (
+                    typeof(WINDOW.g_rgPlayedApps) != 'undefined' &&
+                    WINDOW.g_rgPlayedApps !== false &&
+                    !WINDOW.g_rgPlayedApps[item.appid]
+                )  {
+                    const strWarning = 'You\'ve never played the game this item is from.';
+                    
+                    if ( !item.fraudwarnings ) {
+                        item.fraudwarnings = [ strWarning ];
+                    } else {
+                        // Don't push the NoPlaytime warning over and over.
+                        if ( item.fraudwarnings.indexOf( strWarning ) == -1 ) {
+                            item.fraudwarnings.push( strWarning );
+                        }
+                    }
+                }
+                
+                if ( item.id && item.fraudwarnings ) {
+                    showElement(elSlot.querySelector('.slot_app_fraudwarning'));
+                } else  {
+                    hideElement(elSlot.querySelector('.slot_app_fraudwarning'));
+                }
+            } else {
+                hideElement(elSlot.querySelector('.slot_applogo'));
+                hideElement(elSlot.querySelector('.slot_app_fraudwarning'));
+            }
+            
+            const elActionMenuButton = elSlot.querySelector('.slot_actionmenu_button');
+            
+            showElement(elActionMenuButton);
+            
+            // WINDOW.jQuery('#' + elActionMenuButton.id).click(() => {
+            //     HandleTradeActionMenu( elActionMenuButton, item, item.is_their_item ? UserThem : UserYou )
+            // } );
+            elActionMenuButton.addEventListener('click', (_e) => {
+                HandleTradeActionMenu( elActionMenuButton, item, item.is_their_item ? UserThem : UserYou )
+            });
+            
+            // WINDOW.jQuery(elSlot).addClass('has_item');
+            elSlot.classList.add('has_item');
+            elSlot.hasItem = true;
         };
-        
-        // stand-alone function to create a slot element
-        function createTradeSlotElement(bIsYourSlot, iSlot) {
-            const id = bIsYourSlot ? 'your_slot_' + iSlot : 'their_slot_' + iSlot;
-            const elSlot = WINDOW.CreateSlotElement( id );
-            
-            elSlot.iSlot = iSlot;
-            
-            return elSlot;
-        }
         
         // basically removes animation due to bugginess
         // also it's a bit faster
         WINDOW.EnsureSufficientTradeSlots = function(bYourSlots, cSlotsInUse, cCurrencySlotsInUse) {
+            // stand-alone function to create a slot element
+            function createTradeSlotElement(bIsYourSlot, iSlot) {
+                const id = bIsYourSlot ? 'your_slot_' + iSlot : 'their_slot_' + iSlot;
+                const elSlot = WINDOW.CreateSlotElement( id );
+                
+                elSlot.iSlot = iSlot;
+                
+                return elSlot;
+            }
+            
             const getDesiredSlots = () => {
                 const useResponsiveLayout = WINDOW.Economy_UseResponsiveLayout();
                 const cTotalSlotsInUse = cSlotsInUse + cCurrencySlotsInUse;
