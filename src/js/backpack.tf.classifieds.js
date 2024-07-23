@@ -15,7 +15,7 @@ function main({ Utils }) {
         const currencies = Utils.stringToCurrencies(listing_price);
         
         // no currencies
-        if (currencies == null) {
+        if (currencies === null) {
             // continue
             return;
         }

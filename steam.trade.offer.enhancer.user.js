@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Steam Trade Offer Enhancer
 // @description Browser script to enhance Steam trade offers.
-// @version     2.2.1
+// @version     2.2.2
 // @author      Julia
 // @namespace   http://steamcommunity.com/profiles/76561198080179568/
 // @updateURL   https://github.com/juliarose/steam-trade-offer-enhancer/raw/master/steam.trade.offer.enhancer.meta.js
@@ -45,7 +45,7 @@
                     const currencies = Utils.stringToCurrencies(listing_price);
                     
                     // no currencies
-                    if (currencies == null) {
+                    if (currencies === null) {
                         // continue
                         return;
                     }
@@ -3028,7 +3028,6 @@
                         
                         for ( let iCurrency = 0; iCurrency < rgCurrency.length; iCurrency++ ) {
                             const currencyUpdate = rgCurrency[iCurrency];
-                            
                             // just skip pending inventories, the currency will be drawn after the inventory arrival
                             const inventory = user.getInventory( currencyUpdate.appid, currencyUpdate.contextid );
                             
@@ -3241,33 +3240,39 @@
                             if ( nNumBadItems > 0 ) {
                                 let strEvent = "";
                                 const item = user.findAsset( firstBadItem.appid, firstBadItem.contextid, firstBadItem.assetid );
+                                
                                 if ( item ) {
+                                    // escapeHTML isn't a native method and I'm unsure if this will be pulled in from the scope
+                                    // so we check if it exists before calling it
+                                    const name = item.name.escapeHTML ? item.name.escapeHTML() : item.name;
+                                    
                                     if ( nNumBadItems == 1 ) {
                                         strEvent = 'You are not allowed to receive the item "%1$s."'
-                                                .replace( '%1$s', item.name.escapeHTML() );
+                                            .replace( '%1$s', name );
                                     } else {
                                         strEvent = 'You are not allowed to receive %1$s of the items being offered including "%2$s."'
-                                                .replace( '%1$s', nNumBadItems )
-                                                .replace( '%2$s', item.name.escapeHTML() );
+                                            .replace( '%1$s', nNumBadItems )
+                                            .replace( '%2$s', name );
                                     }
                                 } else {
                                     if ( nNumBadItems == 1 ) {
                                         strEvent = 'You are not allowed to receive one of the items being offered.';
                                     } else {
                                         strEvent = 'You are not allowed to receive %1$s of the items being offered.'
-                                                .replace( '%1$s', nNumBadItems );
+                                            .replace( '%1$s', nNumBadItems );
                                     }
                                 }
                                 
                                 if ( nFullInventoryAppId ) {
+                                    const name = rgAppData.name.escapeHTML ? rgAppData.name.escapeHTML() : rgAppData.name;
                                     const rgAppData = g_rgAppContextData[nFullInventoryAppId];
                                     const strEventAppend = 'Your inventory for %1$s is full.'
-                                            .replace( '%1$s', rgAppData.name.escapeHTML() );
+                                        .replace( '%1$s', name );
                                     
                                     strEvent = strEvent + ' ' + strEventAppend;
                                 }
                                 
-                                const elEvent = new Element( 'div', {'class': 'logevent' } );
+                                const elEvent = new WINDOW.Element( 'div', {'class': 'logevent' } );
                                 elEvent.update( strEvent );
                                 $('log').appendChild( elEvent );
                             }
@@ -3281,12 +3286,14 @@
                                 const item = user.findAsset( firstExpiringItem.appid, firstExpiringItem.contextid, firstExpiringItem.assetid );
                                 
                                 if ( item ) {
+                                    const name = item.name.escapeHTML ? item.name.escapeHTML() : item.name;
+                                    
                                     if ( nNumExpiringItems == 1 ) {
                                         strEvent = 'The item "%1$s" cannot be included in this trade because it will expire before the trade hold period is over.'
-                                            .replace( '%1$s', item.name.escapeHTML() );
+                                            .replace( '%1$s', name );
                                     } else {
                                         strEvent = 'Some items, including "%1$s," cannot be included in this trade because they will expire before the trade hold period is over.'
-                                            .replace( '%1$s', item.name.escapeHTML() );
+                                            .replace( '%1$s', name );
                                     }
                                 } else {
                                     if ( nNumExpiringItems == 1 ) {
@@ -3296,7 +3303,7 @@
                                     }
                                 }
                                 
-                                const elEvent = new Element( 'div', {'class': 'logevent' } );
+                                const elEvent = new WINDOW.Element( 'div', {'class': 'logevent' } );
                                 elEvent.update( strEvent );
                                 $('log').appendChild( elEvent );
                             }
@@ -3540,7 +3547,7 @@
     (function() {
         const DEPS = (function() {
             // current version number of script
-            const VERSION = '2.2.1';
+            const VERSION = '2.2.2';
             // our window object for accessing globals
             const WINDOW = unsafeWindow;
             // dependencies to provide to each page script

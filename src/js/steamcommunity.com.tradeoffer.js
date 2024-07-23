@@ -1587,7 +1587,6 @@ function main({ WINDOW, $, Utils, shared, getStored, setStored }) {
             
             for ( let iCurrency = 0; iCurrency < rgCurrency.length; iCurrency++ ) {
                 const currencyUpdate = rgCurrency[iCurrency];
-                
                 // just skip pending inventories, the currency will be drawn after the inventory arrival
                 const inventory = user.getInventory( currencyUpdate.appid, currencyUpdate.contextid );
                 
@@ -1800,33 +1799,39 @@ function main({ WINDOW, $, Utils, shared, getStored, setStored }) {
                 if ( nNumBadItems > 0 ) {
                     let strEvent = "";
                     const item = user.findAsset( firstBadItem.appid, firstBadItem.contextid, firstBadItem.assetid );
+                    
                     if ( item ) {
+                        // escapeHTML isn't a native method and I'm unsure if this will be pulled in from the scope
+                        // so we check if it exists before calling it
+                        const name = item.name.escapeHTML ? item.name.escapeHTML() : item.name;
+                        
                         if ( nNumBadItems == 1 ) {
                             strEvent = 'You are not allowed to receive the item "%1$s."'
-                                    .replace( '%1$s', item.name.escapeHTML() );
+                                .replace( '%1$s', name );
                         } else {
                             strEvent = 'You are not allowed to receive %1$s of the items being offered including "%2$s."'
-                                    .replace( '%1$s', nNumBadItems )
-                                    .replace( '%2$s', item.name.escapeHTML() );
+                                .replace( '%1$s', nNumBadItems )
+                                .replace( '%2$s', name );
                         }
                     } else {
                         if ( nNumBadItems == 1 ) {
                             strEvent = 'You are not allowed to receive one of the items being offered.';
                         } else {
                             strEvent = 'You are not allowed to receive %1$s of the items being offered.'
-                                    .replace( '%1$s', nNumBadItems );
+                                .replace( '%1$s', nNumBadItems );
                         }
                     }
                     
                     if ( nFullInventoryAppId ) {
+                        const name = rgAppData.name.escapeHTML ? rgAppData.name.escapeHTML() : rgAppData.name;
                         const rgAppData = g_rgAppContextData[nFullInventoryAppId];
                         const strEventAppend = 'Your inventory for %1$s is full.'
-                                .replace( '%1$s', rgAppData.name.escapeHTML() );
+                            .replace( '%1$s', name );
                         
                         strEvent = strEvent + ' ' + strEventAppend;
                     }
                     
-                    const elEvent = new Element( 'div', {'class': 'logevent' } );
+                    const elEvent = new WINDOW.Element( 'div', {'class': 'logevent' } );
                     elEvent.update( strEvent );
                     $('log').appendChild( elEvent );
                 }
@@ -1840,12 +1845,14 @@ function main({ WINDOW, $, Utils, shared, getStored, setStored }) {
                     const item = user.findAsset( firstExpiringItem.appid, firstExpiringItem.contextid, firstExpiringItem.assetid );
                     
                     if ( item ) {
+                        const name = item.name.escapeHTML ? item.name.escapeHTML() : item.name;
+                        
                         if ( nNumExpiringItems == 1 ) {
                             strEvent = 'The item "%1$s" cannot be included in this trade because it will expire before the trade hold period is over.'
-                                .replace( '%1$s', item.name.escapeHTML() );
+                                .replace( '%1$s', name );
                         } else {
                             strEvent = 'Some items, including "%1$s," cannot be included in this trade because they will expire before the trade hold period is over.'
-                                .replace( '%1$s', item.name.escapeHTML() );
+                                .replace( '%1$s', name );
                         }
                     } else {
                         if ( nNumExpiringItems == 1 ) {
@@ -1855,7 +1862,7 @@ function main({ WINDOW, $, Utils, shared, getStored, setStored }) {
                         }
                     }
                     
-                    const elEvent = new Element( 'div', {'class': 'logevent' } );
+                    const elEvent = new WINDOW.Element( 'div', {'class': 'logevent' } );
                     elEvent.update( strEvent );
                     $('log').appendChild( elEvent );
                 }
