@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Steam Trade Offer Enhancer
 // @description Browser script to enhance Steam trade offers.
-// @version     2.2.2
+// @version     2.2.3
 // @author      Julia
 // @namespace   http://steamcommunity.com/profiles/76561198080179568/
 // @updateURL   https://github.com/juliarose/steam-trade-offer-enhancer/raw/master/steam.trade.offer.enhancer.meta.js
@@ -998,15 +998,10 @@
                 // modify each trade offer
                 Array.from(dom.offers).forEach((offerEl) => {
                     // add buttons to the offer
-                    {
-                        const reportButtonEl = offerEl.getElementsByClassName('btn_report')[0];
-                        
-                        // sent offers will not have a report button - we won't add any buttons to them
-                        if (reportButtonEl == null) {
-                            // stop
-                            return;
-                        }
-                        
+                    const reportButtonEl = offerEl.getElementsByClassName('btn_report')[0];
+                    
+                    // sent offers will not have a report button - we won't add any buttons to them
+                    if (reportButtonEl != null) {
                         // match steamid, personaname
                         const pattern = /ReportTradeScam\( ?\'(\d{17})\', ?"(.*)"\ ?\)/;
                         const match = (reportButtonEl.getAttribute('onclick') || '').match(pattern);
@@ -1063,168 +1058,169 @@
                     }
                     
                     // summarize the offer
-                    {
-                        const itemsList = offerEl.getElementsByClassName('tradeoffer_item_list');
-                        
-                        // summarize each list
-                        Array.from(itemsList).forEach((itemsEl) => {
-                            const itemsArr = Array.from(itemsEl.getElementsByClassName('trade_item'));
-                            const getClassInfo = (itemEl) => {
-                                return itemEl.getAttribute('data-economy-item');
-                            };
-                            // has multiples of the same item
-                            const hasMultipleSameItems = Boolean(function() {
-                                let infos = [];
-                                
-                                return itemsArr.some((itemEl) => {
-                                    let classinfo = getClassInfo(itemEl);
-                                    
-                                    if (infos.indexOf(classinfo) !== -1) {
-                                        return true;
-                                    } else {
-                                        infos.push(classinfo);
-                                        return false;
-                                    }
-                                });
-                            }());
-                            const shouldModifyDOM = Boolean(
-                                itemsArr.length > 0 &&
-                                hasMultipleSameItems
-                            );
+                    const itemsList = offerEl.getElementsByClassName('tradeoffer_item_list');
+                    
+                    // summarize each list
+                    Array.from(itemsList).forEach((itemsEl) => {
+                        const itemsArr = Array.from(itemsEl.getElementsByClassName('trade_item'));
+                        const getClassInfo = (itemEl) => {
+                            return itemEl.getAttribute('data-economy-item');
+                        };
+                        // has multiples of the same item
+                        const hasMultipleSameItems = Boolean(function() {
+                            let infos = [];
                             
-                            // only modify dom if necessary
-                            if (shouldModifyDOM) {
-                                const fragment = document.createDocumentFragment();
-                                const clearEl = document.createElement('div');
-                                // get summarized items and sort elements by properties
-                                // most of this stuff should be fairly optimized
-                                const items = (function() {
-                                    const getSort = (key, item) => {
-                                        let index, value;
-                                        
-                                        if (key === 'count') {
-                                            index = -item.count;
-                                        } else {
-                                            value = item.props[key];
-                                            index = sorts[key].indexOf(value);
-                                            
-                                            if (index === -1) {
-                                                sorts[key].push(value);
-                                                index = sorts[key].indexOf(value);
-                                            }
-                                        }
-                                        
-                                        return index;
+                            return itemsArr.some((itemEl) => {
+                                let classinfo = getClassInfo(itemEl);
+                                
+                                if (infos.indexOf(classinfo) !== -1) {
+                                    return true;
+                                } else {
+                                    infos.push(classinfo);
+                                    return false;
+                                }
+                            });
+                        }());
+                        const shouldModifyDOM = Boolean(
+                            itemsArr.length > 0 &&
+                            hasMultipleSameItems
+                        );
+                        
+                        // only modify dom if necessary
+                        if (!shouldModifyDOM) {
+                            // continue
+                            return;
+                        }
+                        
+                        const fragment = document.createDocumentFragment();
+                        const clearEl = document.createElement('div');
+                        // get summarized items and sort elements by properties
+                        // most of this stuff should be fairly optimized
+                        const items = (function() {
+                            const getSort = (key, item) => {
+                                let index, value;
+                                
+                                if (key === 'count') {
+                                    index = -item.count;
+                                } else {
+                                    value = item.props[key];
+                                    index = sorts[key].indexOf(value);
+                                    
+                                    if (index === -1) {
+                                        sorts[key].push(value);
+                                        index = sorts[key].indexOf(value);
+                                    }
+                                }
+                                
+                                return index;
+                            };
+                            // some parameters to sort by
+                            const sorts = {
+                                app: [
+                                    // team fortress 2
+                                    '440',
+                                    // csgo
+                                    '730'
+                                ],
+                                color: [
+                                    // unusual
+                                    'rgb(134, 80, 172)',
+                                    // collectors
+                                    'rgb(170, 0, 0)',
+                                    // strange
+                                    'rgb(207, 106, 50)',
+                                    // haunted
+                                    'rgb(56, 243, 171)',
+                                    // genuine
+                                    'rgb(77, 116, 85)',
+                                    // vintage
+                                    'rgb(71, 98, 145)',
+                                    // decorated
+                                    'rgb(250, 250, 250)',
+                                    // unique
+                                    'rgb(125, 109, 0)'
+                                ]
+                            };
+                            // this reduces the items on the page and puts them into
+                            // a group which contains the count for that item
+                            const items = (function() {
+                                const getItem = (classinfo, itemEl) => {
+                                    return {
+                                        classinfo,
+                                        app: classinfo.replace('classinfo/', '').split('/')[0],
+                                        color: itemEl.style.borderColor
                                     };
-                                    // some parameters to sort by
-                                    const sorts = {
-                                        app: [
-                                            // team fortress 2
-                                            '440',
-                                            // csgo
-                                            '730'
-                                        ],
-                                        color: [
-                                            // unusual
-                                            'rgb(134, 80, 172)',
-                                            // collectors
-                                            'rgb(170, 0, 0)',
-                                            // strange
-                                            'rgb(207, 106, 50)',
-                                            // haunted
-                                            'rgb(56, 243, 171)',
-                                            // genuine
-                                            'rgb(77, 116, 85)',
-                                            // vintage
-                                            'rgb(71, 98, 145)',
-                                            // decorated
-                                            'rgb(250, 250, 250)',
-                                            // unique
-                                            'rgb(125, 109, 0)'
-                                        ]
-                                    };
-                                    // this reduces the items on the page and puts them into
-                                    // a group which contains the count for that item
-                                    const items = (function() {
-                                        const getItem = (classinfo, itemEl) => {
-                                            return {
-                                                classinfo,
-                                                app: classinfo.replace('classinfo/', '').split('/')[0],
-                                                color: itemEl.style.borderColor
-                                            };
+                                };
+                                const items = itemsArr.reduce((result, itemEl) => {
+                                    const classinfo = getClassInfo(itemEl);
+                                    
+                                    if (result[classinfo]) {
+                                        result[classinfo].count += 1;
+                                    } else {
+                                        result[classinfo] = {
+                                            el: itemEl,
+                                            count: 1,
+                                            props: getItem(classinfo, itemEl)
                                         };
-                                        const items = itemsArr.reduce((result, itemEl) => {
-                                            const classinfo = getClassInfo(itemEl);
-                                            
-                                            if (result[classinfo]) {
-                                                result[classinfo].count += 1;
-                                            } else {
-                                                result[classinfo] = {
-                                                    el: itemEl,
-                                                    count: 1,
-                                                    props: getItem(classinfo, itemEl)
-                                                };
-                                            }
-                                            
-                                            return result;
-                                        }, {});
-                                        
-                                        return Object.values(items);
-                                    }());
-                                    const sorted = items.sort((a, b) => {
-                                        let index = 0;
-                                        
-                                        // sort by these keys
-                                        // break when difference is found
-                                        [
-                                            'app',
-                                            'color',
-                                            'count'
-                                        ].find((key) => {
-                                            // get the sort value for a and b
-                                            const [sortA, sortB] = [a, b].map((value) => {
-                                                return getSort(key, value);
-                                            });
-                                            
-                                            // these are already sorted in the proper direction
-                                            if (sortA > sortB) {
-                                                index = 1;
-                                                return true;
-                                            } else if (sortA < sortB) {
-                                                index = -1;
-                                                return true;
-                                            }
-                                        });
-                                        
-                                        return index;
+                                    }
+                                    
+                                    return result;
+                                }, {});
+                                
+                                return Object.values(items);
+                            }());
+                            const sorted = items.sort((a, b) => {
+                                let index = 0;
+                                
+                                // sort by these keys
+                                // break when difference is found
+                                [
+                                    'app',
+                                    'color',
+                                    'count'
+                                ].find((key) => {
+                                    // get the sort value for a and b
+                                    const [sortA, sortB] = [a, b].map((value) => {
+                                        return getSort(key, value);
                                     });
                                     
-                                    return sorted;
-                                }());
-                                
-                                items.forEach(({ el, count }) => {
-                                    if (count > 1) {
-                                        // add badge
-                                        const badgeEl = document.createElement('span');
-                                        
-                                        badgeEl.classList.add('summary_badge');
-                                        badgeEl.textContent = count;
-                                        
-                                        el.appendChild(badgeEl);
+                                    // these are already sorted in the proper direction
+                                    if (sortA > sortB) {
+                                        index = 1;
+                                        return true;
+                                    } else if (sortA < sortB) {
+                                        index = -1;
+                                        return true;
                                     }
-                                    
-                                    fragment.appendChild(el);
                                 });
                                 
-                                clearEl.style.clear = 'both';
-                                // add clearfix to end of fragment
-                                fragment.appendChild(clearEl);
-                                // clear html before-hand to reduce dom manipulation
-                                itemsEl.innerHTML = '';
-                                itemsEl.appendChild(fragment);
+                                return index;
+                            });
+                            
+                            return sorted;
+                        }());
+                        
+                        items.forEach(({ el, count }) => {
+                            if (count > 1) {
+                                // add badge
+                                const badgeEl = document.createElement('span');
+                                
+                                badgeEl.classList.add('summary_badge');
+                                badgeEl.textContent = count;
+                                
+                                el.appendChild(badgeEl);
                             }
+                            
+                            fragment.appendChild(el);
                         });
-                    }
+                        
+                        clearEl.style.clear = 'both';
+                        // add clearfix to end of fragment
+                        fragment.appendChild(clearEl);
+                        // clear html before-hand to reduce dom manipulation
+                        itemsEl.innerHTML = '';
+                        itemsEl.appendChild(fragment);
+                    });
                 });
                 
                 // add attributes to images
@@ -3547,7 +3543,7 @@
     (function() {
         const DEPS = (function() {
             // current version number of script
-            const VERSION = '2.2.2';
+            const VERSION = '2.2.3';
             // our window object for accessing globals
             const WINDOW = unsafeWindow;
             // dependencies to provide to each page script

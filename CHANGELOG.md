@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.3] - 2024-07-23
+### Fixed
+- A bug where the items did not summarize for sent trade offers.
+
 ## [2.2.2] - 2024-07-22
 ### Added
 - Summer 2024 effects.
