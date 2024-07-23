@@ -2752,9 +2752,7 @@
                             // add items: 691.0009765625 ms
                             // add items: 202.3779296875 ms
                             // add  items: 178.66015625 ms
-                            console.time('add items');
                             tradeOfferWindow.addItemsByElements(items);
-                            console.timeEnd('add items');
                             
                             return satisfied;
                         }
@@ -3085,7 +3083,6 @@
                         let firstExpiringItem = null;
                         let nFullInventoryAppId = false;
                         
-                        console.time('update slots');
                         const slotsList = slotContainerEl.children;
                         
                         // this is where the majority of the time is spent
@@ -3233,8 +3230,6 @@
                                 WINDOW.HighlightNewlyAddedItem( elCurItem );
                             }
                         }
-                        
-                        console.timeEnd('update slots');
                         
                         if (
                             !bYourSlots &&
